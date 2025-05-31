@@ -631,16 +631,25 @@
         }
 
         // 語音合成
-        function speak(text) {
-            if ('speechSynthesis' in window && ttsAutoPlay.checked) {
-                const textWithoutEmoji = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
-                const utterance = new SpeechSynthesisUtterance(textWithoutEmoji);
+      async function speak(text) {
+    if ('speechSynthesis' in window && ttsAutoPlay.checked) {
+        const textWithoutEmoji = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
+        const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
+        for (const sentence of sentences) {
+            if (sentence.trim()) {
+                const utterance = new SpeechSynthesisUtterance(sentence.trim());
                 utterance.lang = 'zh-HK';
-                utterance.rate = 1.05;
+                utterance.rate = 1.05;  // 保持語速不變
                 utterance.pitch = 0.3;
                 speechSynthesis.speak(utterance);
+                await new Promise(resolve => {
+                    utterance.onend = resolve;
+                });
+                await new Promise(resolve => setTimeout(resolve, 300));  // 500毫秒停頓
             }
         }
+    }
+}
 
         // 添加消息到聊天
         function addMessage(content, role) {
