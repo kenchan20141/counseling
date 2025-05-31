@@ -449,60 +449,63 @@
         let touchStartY, touchStartX;
 
         // Voice Recognition Setup
-        let recognition;
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.lang = 'zh-HK';
-            recognition.continuous = false;
-            recognition.interimResults = false;
+       let recognition;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'zh-HK';
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-            recognition.onresult = function(event) {
-                let transcript = event.results[0][0].transcript;
-                transcript = transcript
-                    .replace(/(呢|呀|啦|喎|咁|同埋)$/g, '$1。')
-                    .replace(/(係|唔係|有|無|咪|係咪)$/g, '$1，')
-                    .replace(/(因為|所以|如果|但係)$/g, '$1，')
-                    .replace(/([。！？])([^\s])/g, '$1 $2')
-                    .trim();
-                userInput.value = transcript;
-                sendMessage();
-            };
+    recognition.onresult = function(event) {
+        let transcript = event.results[0][0].transcript;
+        transcript = transcript
+            .replace(/(呢|呀|啦|喎|咁|同埋)$/g, '$1。')
+            .replace(/(係|唔係|有|無|咪|係咪)$/g, '$1，')
+            .replace(/(因為|所以|如果|但係)$/g, '$1，')
+            .replace(/([。！？])([^\s])/g, '$1 $2')
+            .trim();
+        userInput.value = transcript;
+        sendMessage();
+    };
 
-            recognition.onerror = function() {
-                addMessage('語音輸入出錯，請再試！', 'error');
-                voiceBtn.disabled = false;
-                isRecording = false;
-            };
+    recognition.onerror = function(event) {
+        addMessage(`語音輸入出錯（${event.error}），請再試！`, 'error');
+        voiceBtn.disabled = false;
+        isRecording = false;
+    };
 
-            recognition.onend = function() {
-                voiceBtn.disabled = false;
-                isRecording = false;
-            };
-        } else {
-            voiceBtn.disabled = true;
-            voiceBtn.title = '瀏覽器不支援語音輸入';
+    recognition.onend = function() {
+        voiceBtn.disabled = false;
+        isRecording = false;
+    };
+} else {
+    voiceBtn.disabled = true;
+    voiceBtn.title = '瀏覽器不支援語音輸入';
+    addMessage('您嘅瀏覽器唔支援語音輸入，請試吓用Chrome或更新瀏覽器！', 'error');
+}
+
+// Long Press and Swipe to Cancel Recording
+voiceBtn.addEventListener('mousedown', startRecording);
+voiceBtn.addEventListener('touchstart', startRecording);
+document.addEventListener('mousemove', checkSwipe);
+document.addEventListener('touchmove', checkSwipe);
+document.addEventListener('mouseup', endRecording);
+document.addEventListener('touchend', endRecording);
+
+function startRecording(e) {
+    if (recognition && !voiceBtn.disabled) {
+        e.preventDefault();
+        isRecording = true;
+        voiceBtn.disabled = true;
+        if (e.type === 'touchstart') {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
         }
-
-        // Long Press and Swipe to Cancel Recording
-        voiceBtn.addEventListener('mousedown', startRecording);
-        voiceBtn.addEventListener('touchstart', startRecording);
-        document.addEventListener('mousemove', checkSwipe);
-        document.addEventListener('touchmove', checkSwipe);
-        document.addEventListener('mouseup', endRecording);
-        document.addEventListener('touchend', endRecording);
-
-        function startRecording(e) {
-            if (recognition && !voiceBtn.disabled) {
-                e.preventDefault();
-                isRecording = true;
-                voiceBtn.disabled = true;
-                if (e.type === 'touchstart') {
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                }
-                recognition.start();
-            }
-        }
+        addMessage('請確保已授予麥克風權限', 'system');
+        recognition.start();
+    }
+}
 
         function checkSwipe(e) {
             if (isRecording) {
