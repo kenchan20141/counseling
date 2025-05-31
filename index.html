@@ -469,15 +469,11 @@ if (SpeechRecognition) {
         sendMessage();
     };
 
-    recognition.onerror = event => {
-    if (event.error === 'no-speech') {
-        addMessage('未檢測到語音', 'error');
-    } else if (event.error === 'not-allowed') {
-        addMessage('麥克風權限被拒絕，請檢查設置', 'error');
-    } else {
-        console.error('錄音錯誤:', event.error);
-    }
-};
+    recognition.onerror = function(event) {
+        addMessage(`語音輸入出錯（${event.error}），請再試！`, 'error');
+        voiceBtn.disabled = false;
+        isRecording = false;
+    };
 
     recognition.onend = function() {
         voiceBtn.disabled = false;
