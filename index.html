@@ -1,0 +1,672 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陳SIR的解憂雜貨店</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-dark: #357abd;
+            --secondary: #50c878;
+            --user-bg: #e6f0fa;
+            --user-border: #4a90e2;
+            --ai-bg: #f0f4f8;
+            --ai-border: #d1e0e8;
+            --error-bg: #ffe6e6;
+            --error-border: #e57373;
+            --text-dark: #2d3748;
+            --text-light: #718096;
+            --shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            --radius: 20px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang HK', 'Segoe UI', sans-serif;
+            background-image: url('https://i.ibb.co/PvJfB2CW/image.png');
+            background-size: cover;
+            background-position: center;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        #chat-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 160px);
+        }
+
+        #chat-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #chat-header i {
+            font-size: 1.8rem;
+        }
+
+        #chat-header h2 {
+            font-weight: 700;
+            font-size: 1.6rem;
+            flex-grow: 1;
+        }
+
+        #mode-select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            background: white;
+            color: var(--text-dark);
+            border: none;
+            cursor: pointer;
+        }
+
+        #chat-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f7fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 18px 24px;
+            border-radius: var(--radius-sm);
+            position: relative;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .user-message {
+            background: var(--user-bg);
+            border-left: 5px solid var(--user-border);
+            align-self: flex-end;
+        }
+
+        .ai-message {
+            background: var(--ai-bg);
+            border-left: 5px solid var(--ai-border);
+            align-self: flex-start;
+        }
+
+        .error-message {
+            background: var(--error-bg);
+            border-left: 5px solid var(--error-border);
+            align-self: center;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .user-message .message-header {
+            color: var(--primary-dark);
+        }
+
+        .ai-message .message-header {
+            color: var(--secondary);
+        }
+
+        .message-content {
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: white;
+            color: var(--primary);
+        }
+
+        .copy-btn.copied {
+            color: var(--secondary);
+            transform: scale(1.15);
+        }
+
+        .copy-btn.copied i::before {
+            content: "\f00c";
+        }
+
+        #input-container {
+            display: flex;
+            padding: 25px;
+            background: white;
+            border-top: 1px solid #edf2f7;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+        }
+
+        #voice-btn, #send-btn {
+            padding: 0 25px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        #voice-btn:hover, #send-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        #voice-btn:disabled, #send-btn:disabled {
+            background: #a3bffa;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #tts-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            background: var(--ai-bg);
+            border-radius: var(--radius-sm);
+            align-self: flex-start;
+            box-shadow: var(--shadow);
+        }
+
+        .typing-indicator span {
+            height: 12px;
+            width: 12px;
+            background: var(--text-light);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 3px;
+            animation: typing 1s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @media (max-width: 768px) {
+            #chat-container {
+                height: calc(100vh - 120px);
+            }
+            #input-container {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #input-container {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            #voice-btn, #send-btn {
+                padding: 0 20px;
+                width: 48%;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #edf2f7;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>陳SIR的解憂雜貨店</h1>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-header">
+            <i class="fas fa-robot"></i>
+            <h2>陳SIR</h2>
+            <select id="mode-select">
+                <option value="comfort">安慰模式</option>
+                <option value="philosophy">哲理模式</option>
+            </select>
+        </div>
+
+        <div id="chat-output">
+            <!-- Initial message will be added via JavaScript -->
+        </div>
+
+        <div class="typing-indicator" id="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
+            <button id="voice-btn" title="長按錄音">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button id="send-btn">
+                <i class="fas fa-paper-plane"></i>
+                <span>發送</span>
+            </button>
+            <div id="tts-toggle">
+                <input type="checkbox" id="tts-auto-play" checked>
+                <label for="tts-auto-play">自動播放語音</label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEYS = [
+            "sk-MoqwsgO8P9MEoCrftvdSYA",
+            "sk-04KvBMK1EUyinjzdCb1wXQ"
+        ];
+        let currentApiKeyIndex = 0;
+        const API_URL = "https://chatapi.akash.network/api/v1/chat/completions";
+        const MODEL = "DeepSeek-R1-0528";
+
+        const chatOutput = document.getElementById('chat-output');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const voiceBtn = document.getElementById('voice-btn');
+        const modeSelect = document.getElementById('mode-select');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const ttsAutoPlay = document.getElementById('tts-auto-play');
+        let conversationHistory = [];
+        let isRecording = false;
+        let touchStartY, touchStartX;
+
+        // Voice Recognition Setup
+        let recognition;
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'zh-HK';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                let transcript = event.results[0][0].transcript;
+                transcript = transcript
+                    .replace(/(呢|呀|啦|喎|咁|同埋)$/g, '$1。')
+                    .replace(/(係|唔係|有|無|咪|係咪)$/g, '$1，')
+                    .replace(/(因為|所以|如果|但係)$/g, '$1，')
+                    .replace(/([。！？])([^\s])/g, '$1 $2')
+                    .trim();
+                userInput.value = transcript;
+                sendMessage();
+            };
+
+            recognition.onerror = function() {
+                addMessage('語音輸入出錯，請再試！', 'error');
+                voiceBtn.disabled = false;
+                isRecording = false;
+            };
+
+            recognition.onend = function() {
+                voiceBtn.disabled = false;
+                isRecording = false;
+            };
+        } else {
+            voiceBtn.disabled = true;
+            voiceBtn.title = '瀏覽器不支援語音輸入';
+        }
+
+        // Long Press and Swipe to Cancel Recording
+        voiceBtn.addEventListener('mousedown', startRecording);
+        voiceBtn.addEventListener('touchstart', startRecording);
+        document.addEventListener('mousemove', checkSwipe);
+        document.addEventListener('touchmove', checkSwipe);
+        document.addEventListener('mouseup', endRecording);
+        document.addEventListener('touchend', endRecording);
+
+        function startRecording(e) {
+            if (recognition && !voiceBtn.disabled) {
+                e.preventDefault();
+                isRecording = true;
+                voiceBtn.disabled = true;
+                if (e.type === 'touchstart') {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                }
+                recognition.start();
+            }
+        }
+
+        function checkSwipe(e) {
+            if (isRecording) {
+                let currentX, currentY;
+                if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX;
+                    currentY = e.touches[0].clientY;
+                } else {
+                    currentX = e.clientX;
+                    currentY = e.clientY;
+                }
+                const deltaX = Math.abs(currentX - touchStartX);
+                const deltaY = Math.abs(currentY - touchStartY);
+                if (deltaX > 50 || deltaY > 50) {
+                    recognition.stop();
+                    voiceBtn.disabled = false;
+                    isRecording = false;
+                    addMessage('錄音已取消', 'error');
+                }
+            }
+        }
+
+        function endRecording() {
+            if (isRecording) {
+                recognition.stop();
+            }
+        }
+
+        // TTS Function with Adjustments
+        function speak(text) {
+            if ('speechSynthesis' in window && ttsAutoPlay.checked) {
+                const textWithoutEmoji = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
+                const utterance = new SpeechSynthesisUtterance(textWithoutEmoji);
+                utterance.lang = 'zh-HK';
+                utterance.rate = 1.3;
+                utterance.pitch = 1.1;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Add Message to Chat
+        function addMessage(content, role) {
+            if (role === 'ai') {
+                content = content.replace(/<think>[\s\S]*?<\/think>/g, '');
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'ai' ? 'ai-message' : role === 'user' ? 'user-message' : 'error-message'}`;
+
+            const messageHeader = document.createElement('div');
+            messageHeader.className = 'message-header';
+            messageHeader.innerHTML = `
+                <i class="fas ${role === 'ai' ? 'fa-robot' : 'fa-user'}"></i>
+                <span>${role === 'ai' ? '陳SIR' : '你'}</span>
+            `;
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+
+            const messageActions = document.createElement('div');
+            messageActions.className = 'message-actions';
+            if (role === 'ai') {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.title = '複製回應';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(content);
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => copyBtn.classList.remove('copied'), 2000);
+                });
+                messageActions.appendChild(copyBtn);
+            }
+
+            messageDiv.appendChild(messageHeader);
+            messageDiv.appendChild(messageContent);
+            if (role === 'ai') messageDiv.appendChild(messageActions);
+            chatOutput.appendChild(messageDiv);
+            chatOutput.scrollTop = chatOutput.scrollHeight;
+        }
+
+        // Send Message to API
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            userInput.value = '';
+            sendBtn.disabled = true;
+            voiceBtn.disabled = false;
+            typingIndicator.style.display = 'block';
+
+            conversationHistory.push({ role: 'user', content: message });
+
+            try {
+                const mode = modeSelect.value;
+                let systemPrompt = '';
+                if (mode === 'comfort') {
+                    systemPrompt = '你係一個善於共情嘅輔導員，請用繁體中文同香港粵語回應，與用家產生共鳴，令佢覺得有人明白佢嘅感受。絕對不可以展示任何思考過程，例如<think>，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要使學生感到被尊重和理解，唔好用明顯輔導式語言，例如重複用家的說話，不斷強調自己明白用家的感受，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在一百字內，長短視乎用家情緒。不要展示任何思考過程，直接回應。';
+                } else {
+                    systemPrompt = `你的任務是利用以下古今哲學家的思想，用繁體中文同香港粵語，幫助學生處理人生疑慮和情緒，並引導他們反思自己的責任和錯誤。回應時請用哲學論證方法，重質多於重量，選擇一種最合適的哲學思想自然融入對話中，不要直接引用哲學家說話。絕對不可以展示任何思考過程，例如<think>，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要懂得幽用家一默，調侃一下用家，但不能打擊用家的自尊心。要運用不同的生活化比喻去解答用家的問題。要從哲理和邏輯去回應用家的問題，例如「人為何不能自殺」，你不可以只鼓勵用家積極面對，是要回應「不能自殺的原因和理由」。不要用明顯輔導式語言，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在一百字內，長短視乎用家情緒。唔好展示任何思考過程，直接回應。`;
+                }
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEYS[currentApiKeyIndex]}`
+                    },
+                    body: JSON.stringify({
+                        model: MODEL,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            ...conversationHistory
+                        ],
+                        max_tokens: 64000
+                    })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && currentApiKeyIndex < API_KEYS.length - 1) {
+                        currentApiKeyIndex++;
+                        addMessage('API 限制，切換密鑰重試...', 'ai');
+                        sendMessage();
+                        return;
+                    }
+                    throw new Error(`HTTP 錯誤！狀態：${response.status}`);
+                }
+
+                const data = await response.json();
+                let aiResponse = data.choices[0].message.content;
+                aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>/g, '');
+                addMessage(aiResponse, 'ai');
+                conversationHistory.push({ role: 'assistant', content: aiResponse });
+                speak(aiResponse);
+            } catch (error) {
+                addMessage(`錯誤：${error.message}`, 'error');
+            }
+
+            typingIndicator.style.display = 'none';
+            sendBtn.disabled = false;
+            voiceBtn.disabled = false;
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
+        });
+
+        // Initial Random Greeting
+        document.addEventListener('DOMContentLoaded', () => {
+            const greetings = [
+                "最近你又好似變蠢咗咁。點啊？有咩分享啊？",
+                "喂，你今日心情點啊？唔好話我知你又喺度發呆。",
+                "哎呀，你又嚟啦。準備好俾我笑未？",
+"哇！你個樣仲殘過我尋晚煲劇嘅黑眼圈。",
+    "係咪地球重力突然加大？你個頭耷到貼地喎。",
+"今日你個髮型好有創意喎，係咪用咗電飯煲剪頭髮？",
+    "喂！你件衫同我阿婆張梳化撞款喎，復古大師？",
+    "睇你個樣似被外星人綁架完放返嚟，分享下經歷啦！",
+    "你對眼瞇到得條線，尋晚去咗做賊啊？",
+"你個樣似食咗十粒安眠藥但仲要返工，堅強啊兄弟！",
+    "今日你個氣場好特別，似足茶餐廳杯凍檸茶——少甜走冰。",
+"你個樣愁過考試肥佬，定係便秘三日？",
+"個頭油到反光，可以借嚟當鏡照啦！",
+"今日氣場頹過淋雨嘅流浪貓，需要熱牛奶？",
+"你件外套似我屋企張梳化套，有冇親戚關係？",
+ "個笑容僵過蠟像館展品，需要幫你解凍？",
+ "成個人霉過回南天，需要抽濕機定太陽燈？",
+  "成身散發咖啡因氣息，今日第幾杯？",
+"成個人散發怨氣，剛撞鬼定撞見老細？",
+"眼袋深過馬里亞納海溝，需要填充？",
+"個樣呆過未插電嘅機械人，需要充電？"
+
+            ];
+            const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+            addMessage(randomGreeting, 'ai');
+            conversationHistory.push({ role: 'assistant', content: randomGreeting });
+            speak(randomGreeting);
+        });
+    </script>
+</body>
+</html>
