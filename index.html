@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
@@ -55,6 +16,7 @@
             --ai-border: #d1e0e8;
             --error-bg: #ffe6e6;
             --error-border: #e57373;
+            --recording-bg: #e74c3c;
             --text-dark: #2d3748;
             --text-light: #718096;
             --shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
@@ -97,26 +59,6 @@
             color: transparent;
         }
 
-
- .copyright-footer {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            padding: 5px 10px;
-            background-color: #f1f1f1;
-        }
-
-        .copyright-footer p {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .copyright-footer p {
-                font-size: 12px;
-            }
-        }
-            
         #chat-container {
             max-width: 900px;
             width: 100%;
@@ -265,6 +207,7 @@
             border-top: 1px solid #edf2f7;
             gap: 15px;
             align-items: center;
+            position: relative;
         }
 
         #user-input {
@@ -308,6 +251,17 @@
             transform: none;
         }
 
+        #voice-btn.recording {
+            background: var(--recording-bg);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         #tts-toggle {
             display: flex;
             align-items: center;
@@ -348,6 +302,50 @@
             50% { transform: translateY(-6px); }
         }
 
+        .recording-indicator {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--recording-bg);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideDown 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes slideDown {
+            from { top: -60px; opacity: 0; }
+            to { top: -40px; opacity: 1; }
+        }
+
+        .recording-indicator i {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .swipe-hint {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             #chat-container {
                 height: calc(100vh - 120px);
@@ -358,6 +356,10 @@
             .header h1 {
                 font-size: 2.2rem;
             }
+            #voice-btn, #send-btn {
+                padding: 0 15px;
+                font-size: 1rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -366,8 +368,19 @@
                 gap: 10px;
             }
             #voice-btn, #send-btn {
-                padding: 0 20px;
+                padding: 0 15px;
                 width: 48%;
+                font-size: 0.9rem;
+            }
+            .swipe-hint {
+                top: -25px;
+                font-size: 0.7rem;
+            }
+            #tts-toggle {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
             }
         }
 
@@ -396,9 +409,8 @@
             <i class="fas fa-robot"></i>
             <h2>陳SIR</h2>
             <select id="mode-select">
-                    <option value="philosophy">哲理模式</option>
+                <option value="philosophy">哲理模式</option>
                 <option value="comfort">安慰模式</option>
-                
             </select>
         </div>
 
@@ -414,7 +426,7 @@
 
         <div id="input-container">
             <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
-            <button id="voice-btn" title="長按錄音">
+            <button id="voice-btn" title="點擊錄音">
                 <i class="fas fa-microphone"></i>
             </button>
             <button id="send-btn">
@@ -424,6 +436,12 @@
             <div id="tts-toggle">
                 <input type="checkbox" id="tts-auto-play" checked>
                 <label for="tts-auto-play">自動播放語音</label>
+            </div>
+            <div class="recording-indicator" id="recording-indicator" style="display: none;">
+                <i class="fas fa-circle"></i> 正在錄音...
+            </div>
+            <div class="swipe-hint" id="swipe-hint">
+                滑動取消錄音
             </div>
         </div>
     </div>
@@ -444,18 +462,40 @@
         const modeSelect = document.getElementById('mode-select');
         const typingIndicator = document.getElementById('typing-indicator');
         const ttsAutoPlay = document.getElementById('tts-auto-play');
+        const recordingIndicator = document.getElementById('recording-indicator');
+        const swipeHint = document.getElementById('swipe-hint');
         let conversationHistory = [];
         let isRecording = false;
         let touchStartY, touchStartX;
+        const SWIPE_THRESHOLD = 100; // 滑動閾值設置為100px
 
-        // Voice Recognition Setup
-        let recognition;
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
+        // 檢查瀏覽器是否支援語音識別
+        function isSpeechRecognitionSupported() {
+            return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+        }
+
+        // 語音識別初始化
+        function initSpeechRecognition() {
+            if (!isSpeechRecognitionSupported()) {
+                voiceBtn.disabled = true;
+                voiceBtn.title = '您的瀏覽器不支援語音輸入';
+                return null;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
             recognition.lang = 'zh-HK';
             recognition.continuous = false;
             recognition.interimResults = false;
+            
+            return recognition;
+        }
 
+        // 初始化語音識別
+        let recognition = initSpeechRecognition();
+
+        // 設置語音識別事件處理
+        if (recognition) {
             recognition.onresult = function(event) {
                 let transcript = event.results[0][0].transcript;
                 transcript = transcript
@@ -468,70 +508,68 @@
                 sendMessage();
             };
 
-            recognition.onerror = function() {
-                addMessage('語音輸入出錯，請再試！', 'error');
-                voiceBtn.disabled = false;
-                isRecording = false;
+            recognition.onerror = function(event) {
+                console.error('語音識別錯誤:', event.error);
+                addMessage(`語音輸入出錯: ${event.error}`, 'error');
+                stopRecording();
             };
 
             recognition.onend = function() {
-                voiceBtn.disabled = false;
-                isRecording = false;
+                stopRecording();
             };
-        } else {
-            voiceBtn.disabled = true;
-            voiceBtn.title = '瀏覽器不支援語音輸入';
         }
 
-        // Long Press and Swipe to Cancel Recording
-        voiceBtn.addEventListener('mousedown', startRecording);
-        voiceBtn.addEventListener('touchstart', startRecording);
-        document.addEventListener('mousemove', checkSwipe);
-        document.addEventListener('touchmove', checkSwipe);
-        document.addEventListener('mouseup', endRecording);
-        document.addEventListener('touchend', endRecording);
-
-        function startRecording(e) {
-            if (recognition && !voiceBtn.disabled) {
-                e.preventDefault();
-                isRecording = true;
-                voiceBtn.disabled = true;
-                if (e.type === 'touchstart') {
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                }
+        // 開始錄音
+        function startRecording() {
+            if (!recognition || voiceBtn.disabled) return;
+            
+            try {
                 recognition.start();
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                recordingIndicator.style.display = 'flex';
+                swipeHint.style.display = 'block';
+                voiceBtn.title = '正在錄音，滑動取消';
+            } catch (error) {
+                console.error('啟動語音識別失敗:', error);
+                addMessage('啟動麥克風失敗，請確保已授予權限', 'error');
+                stopRecording();
             }
         }
 
+        // 停止錄音
+        function stopRecording() {
+            isRecording = false;
+            voiceBtn.classList.remove('recording');
+            recordingIndicator.style.display = 'none';
+            swipeHint.style.display = 'none';
+            voiceBtn.title = '點擊錄音';
+            voiceBtn.disabled = false;
+        }
+
+        // 檢查滑動取消
         function checkSwipe(e) {
-            if (isRecording) {
-                let currentX, currentY;
-                if (e.type === 'touchmove') {
-                    currentX = e.touches[0].clientX;
-                    currentY = e.touches[0].clientY;
-                } else {
-                    currentX = e.clientX;
-                    currentY = e.clientY;
-                }
-                const deltaX = Math.abs(currentX - touchStartX);
-                const deltaY = Math.abs(currentY - touchStartY);
-                if (deltaX > 50 || deltaY > 50) {
-                    recognition.stop();
-                    voiceBtn.disabled = false;
-                    isRecording = false;
-                    addMessage('錄音已取消', 'error');
-                }
+            if (!isRecording) return;
+            
+            let currentX, currentY;
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX;
+                currentY = e.touches[0].clientY;
+            } else {
+                currentX = e.clientX;
+                currentY = e.clientY;
             }
-        }
-
-        function endRecording() {
-            if (isRecording) {
+            
+            const deltaX = Math.abs(currentX - touchStartX);
+            const deltaY = Math.abs(currentY - touchStartY);
+            
+            if (deltaX > SWIPE_THRESHOLD || deltaY > SWIPE_THRESHOLD) {
                 recognition.stop();
+                addMessage('錄音已取消', 'error');
             }
         }
 
-        // TTS Function with Adjustments
+        // 語音合成
         function speak(text) {
             if ('speechSynthesis' in window && ttsAutoPlay.checked) {
                 const textWithoutEmoji = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
@@ -543,7 +581,7 @@
             }
         }
 
-        // Add Message to Chat
+        // 添加消息到聊天
         function addMessage(content, role) {
             if (role === 'ai') {
                 content = content.replace(/<think>[\s\S]*?<\/think>/g, '');
@@ -585,7 +623,7 @@
             chatOutput.scrollTop = chatOutput.scrollHeight;
         }
 
-        // Send Message to API
+        // 發送消息到API
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
@@ -593,7 +631,7 @@
             addMessage(message, 'user');
             userInput.value = '';
             sendBtn.disabled = true;
-            voiceBtn.disabled = false;
+            voiceBtn.disabled = true;
             typingIndicator.style.display = 'block';
 
             conversationHistory.push({ role: 'user', content: message });
@@ -648,48 +686,53 @@
             voiceBtn.disabled = false;
         }
 
-        // Event Listeners
+        // 事件監聽器
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
         });
 
-        // Initial Random Greeting
+        // 語音按鈕事件處理
+        voiceBtn.addEventListener('click', () => {
+            if (!isRecording && recognition) {
+                startRecording();
+            }
+        });
+
+        // 滑動取消監聽
+        document.addEventListener('touchstart', (e) => {
+            if (isRecording && e.touches.length > 0) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        });
+
+        document.addEventListener('touchmove', checkSwipe);
+        document.addEventListener('touchend', () => {
+            if (isRecording) {
+                // 結束錄音處理
+            }
+        });
+
+        // 初始問候語
         document.addEventListener('DOMContentLoaded', () => {
             const greetings = [
-                "最近你又好似變蠢咗咁。點啊？有咩分享啊？",
-                "喂，你今日心情點啊？唔好話我知你又喺度發呆。",
-                "哎呀，你又嚟啦。準備好俾我笑未？",
-"哇！你個樣仲殘過我尋晚煲劇嘅黑眼圈。",
-    "係咪地球重力突然加大？你個頭耷到貼地喎。",
-"今日你個髮型好有創意喎，係咪用咗電飯煲剪頭髮？",
-    "喂！你件衫同我阿婆張梳化撞款喎，復古大師？",
-    "睇你個樣似被外星人綁架完放返嚟，分享下經歷啦！",
-    "你對眼瞇到得條線，尋晚去咗做賊啊？",
-"你個樣似食咗十粒安眠藥但仲要返工，堅強啊兄弟！",
-    "今日你個氣場好特別，似足茶餐廳杯凍檸茶——少甜走冰。",
-"你個樣愁過考試肥佬，定係便秘三日？",
-"個頭油到反光，可以借嚟當鏡照啦！",
-"今日氣場頹過淋雨嘅流浪貓，需要熱牛奶？",
-"你件外套似我屋企張梳化套，有冇親戚關係？",
- "個笑容僵過蠟像館展品，需要幫你解凍？",
- "成個人霉過回南天，需要抽濕機定太陽燈？",
-  "成身散發咖啡因氣息，今日第幾杯？",
-"成個人散發怨氣，剛撞鬼定撞見老細？",
-"眼袋深過馬里亞納海溝，需要填充？",
-"個樣呆過未插電嘅機械人，需要充電？"
-
+                "喂！你個樣咁愁，係咪又諗多咗啊？",
+                "哇！今日咁得閒過嚟搵我傾計？",
+                "點啊？又有咩人生難題要解啊？",
+                "睇你個樣似係俾老闆鬧完？過嚟傾下啦！",
+                "人生不如意事十常八九，講嚟聽下點解你咁愁？"
             ];
             const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
             addMessage(randomGreeting, 'ai');
             conversationHistory.push({ role: 'assistant', content: randomGreeting });
             speak(randomGreeting);
+            
+            // 檢查瀏覽器支援
+            if (!isSpeechRecognitionSupported()) {
+                addMessage("提示：您的瀏覽器不支援語音輸入功能，請使用最新版Chrome或Edge瀏覽器", 'error');
+            }
         });
     </script>
-
-<footer class="copyright-footer">
-        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
-    </footer>
-        
 </body>
 </html>
