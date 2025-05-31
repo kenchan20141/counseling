@@ -1,4 +1,43 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
@@ -59,7 +98,7 @@
             color: transparent;
         }
 
- .copyright-footer {
+        .copyright-footer {
             position: fixed;
             bottom: 0;
             right: 0;
@@ -502,7 +541,10 @@
         let conversationHistory = [];
         let isRecording = false;
         let touchStartY, touchStartX;
-        const SWIPE_THRESHOLD = 100; // 滑動閾值設置為100px
+        const SWIPE_THRESHOLD = 100;
+        let recognition;
+        let transcript = '';
+        let silenceTimeout;
 
         // 檢查瀏覽器是否支援語音識別
         function isSpeechRecognitionSupported() {
@@ -510,79 +552,43 @@
         }
 
         // 語音識別初始化
-      function initSpeechRecognition() {
-    // 原有檢查支援部分保持不變
-    if (!isSpeechRecognitionSupported()) {
-        voiceBtn.disabled = true;
-        voiceBtn.title = '您的瀏覽器不支援語音輸入';
-        return null;
-    }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'zh-HK';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    
-    let speechDetected = false;
-    
-    recognition.onstart = function() {
-        console.log('Speech recognition started');
-        speechDetected = false;
-        setTimeout(() => {
-            if (!speechDetected) {
-                recognition.stop();
-                addMessage('未檢測到語音，請重試', 'error');
+        function initSpeechRecognition() {
+            if (!isSpeechRecognitionSupported()) {
+                voiceBtn.disabled = true;
+                voiceBtn.title = '您的瀏覽器不支援語音輸入';
+                return null;
             }
-        }, 5000);
-    };
-    
-    recognition.onspeechstart = function() {
-        speechDetected = true;
-        console.log('Speech detected');
-    };
-    
-    // onresult, onerror, onend 保持原有邏輯，只新增以上部分
-    recognition.onresult = function(event) {
-        let transcript = event.results[0][0].transcript;
-        transcript = transcript
-            .replace(/(呢|呀|啦|喎|咁|同埋)$/g, '$1。')
-            .replace(/(係|唔係|有|無|咪|係咪)$/g, '$1，')
-            .replace(/(因為|所以|如果|但係)$/g, '$1，')
-            .replace(/([。！？])([^\s])/g, '$1 $2')
-            .trim();
-        userInput.value = transcript;
-        sendMessage();
-    };
 
-    recognition.onerror = function(event) {
-        console.error('語音識別錯誤:', event.error);
-        addMessage(`語音輸入出錯: ${event.error}`, 'error');
-        stopRecording();
-    };
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'zh-HK';
+            recognition.continuous = true;
+            recognition.interimResults = true;
 
-    recognition.onend = function() {
-        stopRecording();
-    };
-    
-    return recognition;
-}
+            recognition.onstart = function() {
+                console.log('Speech recognition started');
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                recordingIndicator.style.display = 'flex';
+                swipeHint.style.display = 'block';
+                voiceBtn.title = '正在語音輸入，滑動取消';
+            };
 
-        // 初始化語音識別
-        let recognition = initSpeechRecognition();
-
-        // 設置語音識別事件處理
-        if (recognition) {
             recognition.onresult = function(event) {
-                let transcript = event.results[0][0].transcript;
-                transcript = transcript
-                    .replace(/(呢|呀|啦|喎|咁|同埋)$/g, '$1。')
-                    .replace(/(係|唔係|有|無|咪|係咪)$/g, '$1，')
-                    .replace(/(因為|所以|如果|但係)$/g, '$1，')
-                    .replace(/([。！？])([^\s])/g, '$1 $2')
-                    .trim();
-                userInput.value = transcript;
-                sendMessage();
+                clearTimeout(silenceTimeout);
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        transcript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                userInput.value = transcript + interimTranscript;
+                silenceTimeout = setTimeout(() => {
+                    recognition.stop();
+                    sendMessage();
+                }, 2000);
             };
 
             recognition.onerror = function(event) {
@@ -594,19 +600,24 @@
             recognition.onend = function() {
                 stopRecording();
             };
+
+            return recognition;
         }
+
+        // 初始化語音識別
+        recognition = initSpeechRecognition();
 
         // 開始錄音
         function startRecording() {
             if (!recognition || voiceBtn.disabled) return;
             
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            
             try {
+                transcript = '';
                 recognition.start();
-                isRecording = true;
-                voiceBtn.classList.add('recording');
-                recordingIndicator.style.display = 'flex';
-                swipeHint.style.display = 'block';
-                voiceBtn.title = '正在語音輸入，滑動取消';
             } catch (error) {
                 console.error('啟動語音識別失敗:', error);
                 addMessage('啟動麥克風失敗，請確保已授予權限', 'error');
@@ -622,6 +633,7 @@
             swipeHint.style.display = 'none';
             voiceBtn.title = '點擊語音輸入';
             voiceBtn.disabled = false;
+            clearTimeout(silenceTimeout);
         }
 
         // 檢查滑動取消
@@ -647,29 +659,26 @@
         }
 
         // 語音合成
-     async function speak(text) {
-    if ('speechSynthesis' in window && ttsAutoPlay.checked) {
-        // 移除括號內嘅內容
-        const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
-        // 移除表情符號
-        const textWithoutEmoji = textWithoutParentheses.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
-        // 分割成句子
-        const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
-        for (const sentence of sentences) {
-            if (sentence.trim()) {
-                const utterance = new SpeechSynthesisUtterance(sentence.trim());
-                utterance.lang = 'zh-HK';
-                utterance.rate = 1.05;  // 保持語速不變
-                utterance.pitch = 0.5;
-                speechSynthesis.speak(utterance);
-                await new Promise(resolve => {
-                    utterance.onend = resolve;
-                });
-                await new Promise(resolve => setTimeout(resolve, 200));  // 200毫秒停頓
+        async function speak(text) {
+            if ('speechSynthesis' in window && ttsAutoPlay.checked) {
+                const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
+                const textWithoutEmoji = textWithoutParentheses.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
+                const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
+                for (const sentence of sentences) {
+                    if (sentence.trim()) {
+                        const utterance = new SpeechSynthesisUtterance(sentence.trim());
+                        utterance.lang = 'zh-HK';
+                        utterance.rate = 1.05;
+                        utterance.pitch = 0.5;
+                        speechSynthesis.speak(utterance);
+                        await new Promise(resolve => {
+                            utterance.onend = resolve;
+                        });
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                }
             }
         }
-    }
-}
 
         // 添加消息到聊天
         function addMessage(content, role) {
@@ -715,8 +724,15 @@
 
         // 發送消息到API
         async function sendMessage() {
-            const message = userInput.value.trim();
+            let message = userInput.value.trim();
             if (!message) return;
+
+            message = message
+                .replace(/(呢|呀|啦|喎|咁|同埋)$/g, '$1。')
+                .replace(/(係|唔係|有|無|咪|係咪)$/g, '$1，')
+                .replace(/(因為|所以|如果|但係)$/g, '$1，')
+                .replace(/([。！？])([^\s])/g, '$1 $2')
+                .trim();
 
             addMessage(message, 'user');
             userInput.value = '';
@@ -807,41 +823,40 @@
         // 初始問候語
         document.addEventListener('DOMContentLoaded', () => {
             const greetings = [
-                 "最近你又好似變蠢咗咁。點啊？有咩分享啊？",
-                "喂，你今日心情點啊？唔好話我知你又喺度發呆。",
+                "最近你又好似變蠢咗咁。點啊？有咩分享啊？",
+                "喂，你今日心情點啊？唔好話我知你又喺度發呆呀。",
                 "哎呀，你又嚟啦。準備好俾我笑未？",
-"哇！你個樣仲殘過我尋晚煲劇嘅黑眼圈。",
-    "係咪地球重力突然加大？你個頭耷到貼地喎。",
-"今日你個髮型好有創意喎，係咪用咗電飯煲剪頭髮？",
-    "喂！你件衫同我阿婆張梳化撞款喎，復古大師？",
-    "睇你個樣似被外星人綁架完放返嚟，分享下經歷啦！",
-    "你對眼瞇到得條線，尋晚去咗做賊啊？",
-"你個樣似食咗十粒安眠藥但仲要返工，堅強啊兄弟！",
-    "今日你個氣場好特別，似足茶餐廳杯凍檸茶——少甜走冰。",
-"你個樣愁過考試肥佬，定係便秘三日？",
-"個頭油到反光，可以借嚟當鏡照啦！",
-"今日氣場頹過淋雨嘅流浪貓，需要熱牛奶？",
-"你件外套似我屋企張梳化套，有冇親戚關係？",
- "個笑容僵過蠟像館展品，需要幫你解凍？",
- "成個人霉過回南天，需要抽濕機定太陽燈？",
-  "成身散發咖啡因氣息，今日第幾杯？",
-"成個人散發怨氣，剛撞鬼定撞見老細？",
-"眼袋深過馬里亞納海溝，需要填充？",
-"個樣呆過未插電嘅機械人，需要充電？"
+                "哇！你個樣仲殘過我尋晚煲劇嘅黑眼圈。",
+                "係咪地球重力突然加大？你個頭耷到貼地喎。",
+                "今日你個髮型好有創意喎，係咪用咗電飯煲剪頭髮？",
+                "喂！你件衫同我阿婆張梳化撞款喎，復古大師？",
+                "睇你個樣似被外星人綁架完放返嚟，分享下經歷啦！",
+                "你對眼瞇到得條線，尋晚去咗做賊啊？",
+                "你個樣似食咗十粒安眠藥但仲要返工，堅強呀兄弟！",
+                "今日你個氣場好特別，似足茶餐廳杯凍檸茶——少甜走冰。",
+                "你個樣愁過考試肥佬，係咪便秘咗三日呀？",
+                "個頭油到反光，可以借嚟當鏡照啦！",
+                "今日氣場頹過淋雨嘅流浪貓，需要熱牛奶？",
+                "你件外套似我屋企張梳化套，有冇親戚關係？",
+                "個笑容僵過蠟像館展品，需要幫你解凍？",
+                "成個人霉過回南天，需要抽濕機定太陽燈？",
+                "成身散發咖啡因氣息，今日第幾杯？",
+                "成個人散發怨氣，剛撞鬼定撞見老細？",
+                "眼袋深過馬里亞納海溝，需要填充？",
+                "個樣呆過未插電嘅機械人，需要充電？"
             ];
             const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
             addMessage(randomGreeting, 'ai');
             conversationHistory.push({ role: 'assistant', content: randomGreeting });
             speak(randomGreeting);
             
-            // 檢查瀏覽器支援
             if (!isSpeechRecognitionSupported()) {
                 addMessage("提示：您的瀏覽器不支援語音輸入功能，請使用最新版Chrome或Edge瀏覽器", 'error');
             }
         });
     </script>
     
-<footer class="copyright-footer">
+    <footer class="copyright-footer">
         <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
     </footer>
     
