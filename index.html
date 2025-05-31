@@ -80,7 +80,6 @@
             padding: 25px;
         }
 
-            
         .header {
             text-align: center;
             margin-bottom: 40px;
@@ -98,25 +97,6 @@
             color: transparent;
         }
 
- .copyright-footer {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            padding: 5px 10px;
-            background-color: #f1f1f1;
-        }
-
-        .copyright-footer p {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-            .copyright-footer p {
-                font-size: 12px;
-            }
-        }
-            
         #chat-container {
             max-width: 900px;
             width: 100%;
@@ -430,7 +410,7 @@
 
     <script>
         const API_KEYS = [
-            "sk-Rr9gZjqlzOFcIMC8pd0LuA",
+            "sk-MoqwsgO8P9MEoCrftvdSYA",
             "sk-04KvBMK1EUyinjzdCb1wXQ"
         ];
         let currentApiKeyIndex = 0;
@@ -538,7 +518,7 @@
                 const utterance = new SpeechSynthesisUtterance(textWithoutEmoji);
                 utterance.lang = 'zh-HK';
                 utterance.rate = 1.2;
-                utterance.pitch = 1.5;
+                utterance.pitch = 1.2;
                 speechSynthesis.speak(utterance);
             }
         }
@@ -686,10 +666,5 @@
             speak(randomGreeting);
         });
     </script>
-
-<footer class="copyright-footer">
-        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
-    </footer>
-        
 </body>
 </html>
