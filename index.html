@@ -460,7 +460,7 @@
                 <i class="fas fa-circle"></i> 正在聆聽...
             </div>
             <div class="swipe-hint" id="swipe-hint">
-                滑動取消語音輸入
+                滑動取消
             </div>
         </div>
     </div>
@@ -548,7 +548,7 @@
                 voiceBtn.classList.add('recording');
                 recordingIndicator.style.display = 'flex';
                 swipeHint.style.display = 'block';
-                voiceBtn.title = '正在錄音，滑動取消';
+                voiceBtn.title = '正在語音輸入，滑動取消';
             } catch (error) {
                 console.error('啟動語音識別失敗:', error);
                 addMessage('啟動麥克風失敗，請確保已授予權限', 'error');
@@ -584,7 +584,7 @@
             
             if (deltaX > SWIPE_THRESHOLD || deltaY > SWIPE_THRESHOLD) {
                 recognition.stop();
-                addMessage('錄音已取消', 'error');
+                addMessage('語音輸入已取消', 'error');
             }
         }
 
