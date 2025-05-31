@@ -631,9 +631,13 @@
         }
 
         // 語音合成
-      async function speak(text) {
+     async function speak(text) {
     if ('speechSynthesis' in window && ttsAutoPlay.checked) {
-        const textWithoutEmoji = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
+        // 移除括號內嘅內容
+        const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
+        // 移除表情符號
+        const textWithoutEmoji = textWithoutParentheses.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
+        // 分割成句子
         const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
         for (const sentence of sentences) {
             if (sentence.trim()) {
@@ -645,7 +649,7 @@
                 await new Promise(resolve => {
                     utterance.onend = resolve;
                 });
-                await new Promise(resolve => setTimeout(resolve, 200));  // 500毫秒停頓
+                await new Promise(resolve => setTimeout(resolve, 200));  // 200毫秒停頓
             }
         }
     }
