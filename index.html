@@ -59,6 +59,25 @@
             color: transparent;
         }
 
+ .copyright-footer {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            padding: 5px 10px;
+            background-color: #f1f1f1;
+        }
+
+        .copyright-footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .copyright-footer p {
+                font-size: 12px;
+            }
+        }
+        
         #chat-container {
             max-width: 900px;
             width: 100%;
@@ -426,7 +445,7 @@
 
         <div id="input-container">
             <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
-            <button id="voice-btn" title="點擊錄音">
+            <button id="voice-btn" title="點擊語音輸入">
                 <i class="fas fa-microphone"></i>
             </button>
             <button id="send-btn">
@@ -438,10 +457,10 @@
                 <label for="tts-auto-play">自動播放語音</label>
             </div>
             <div class="recording-indicator" id="recording-indicator" style="display: none;">
-                <i class="fas fa-circle"></i> 正在錄音...
+                <i class="fas fa-circle"></i> 正在聆聽...
             </div>
             <div class="swipe-hint" id="swipe-hint">
-                滑動取消錄音
+                滑動取消語音輸入
             </div>
         </div>
     </div>
@@ -543,7 +562,7 @@
             voiceBtn.classList.remove('recording');
             recordingIndicator.style.display = 'none';
             swipeHint.style.display = 'none';
-            voiceBtn.title = '點擊錄音';
+            voiceBtn.title = '點擊語音輸入';
             voiceBtn.disabled = false;
         }
 
@@ -642,7 +661,7 @@
                 if (mode === 'comfort') {
                     systemPrompt = '你係一個善於共情嘅輔導員，請用繁體中文同香港粵語回應，與用家產生共鳴，令佢覺得有人明白佢嘅感受。絕對不可以展示任何思考過程，例如<think>，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要使學生感到被尊重和理解，唔好用明顯輔導式語言，例如重複用家的說話，不斷強調自己明白用家的感受，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在一百字內，長短視乎用家情緒。不要展示任何思考過程，直接回應。';
                 } else {
-                    systemPrompt = `你的任務是利用以下古今哲學家的思想，用繁體中文同香港粵語，幫助學生處理人生疑慮和情緒，並引導他們反思自己的責任和錯誤。回應時請用哲學論證方法，重質多於重量，選擇一種最合適的哲學思想自然融入對話中，不要直接引用哲學家說話。絕對不可以展示任何思考過程，例如<think>，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要懂得幽用家一默，調侃一下用家，但不能打擊用家的自尊心。要運用不同的生活化比喻去解答用家的問題。要從哲理和邏輯去回應用家的問題，例如「人為何不能自殺」，你不可以只鼓勵用家積極面對，是要回應「不能自殺的原因和理由」。不要用明顯輔導式語言，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在一百字內，長短視乎用家情緒。唔好展示任何思考過程，直接回應。`;
+                    systemPrompt = `你的任務是利用以下古今哲學家的思想，用繁體中文同香港粵語，幫助學生處理人生疑慮和情緒，並引導他們反思自己的責任和錯誤。回應時請用哲學論證方法，重質多於重量，選擇一種最合適的哲學思想及話語自然融入對話中，不要明引哲學家名稱或說話。絕對不可以展示任何思考過程，例如<think>，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要懂得幽用家一默，調侃一下用家，但不能打擊用家的自尊心。要運用不同的生活化比喻去解答用家的問題。要從哲理和邏輯去回應用家的問題，例如「人為何不能自殺」，你不可以只鼓勵用家積極面對，是要回應「不能自殺的原因和理由」。不要用明顯輔導式語言，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在一百字內，長短視乎用家情緒。唔好展示任何思考過程，直接回應。`;
                 }
 
                 const response = await fetch(API_URL, {
@@ -734,5 +753,10 @@
             }
         });
     </script>
+    
+<footer class="copyright-footer">
+        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
+    </footer>
+    
 </body>
 </html>
