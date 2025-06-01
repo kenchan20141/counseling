@@ -1,0 +1,20 @@
+{
+  "name": "陳SIR的解憂雜貨店",
+  "short_name": "解憂雜貨店",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4a90e2",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/pr4X1tyR/image-29.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.ibb.co/pr4X1tyR/image-29.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
