@@ -44,19 +44,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>陳SIR的解憂雜貨店</title>
 
-    <!-- 添加到主畫面設定 -->
+<!-- 添加到主畫面設定 -->
     <meta name="application-name" content="陳SIR的解憂雜貨店">
     <meta name="apple-mobile-web-app-title" content="陳SIR的解憂雜貨店">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    
-    <!-- 引入外部庫 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Android 圖示 -->
+        
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Android 圖示 -->
     <link rel="icon" sizes="192x192" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="icon" sizes="144x144" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="icon" sizes="96x96" href="https://i.ibb.co/pr4X1tyR/image-29.png">
@@ -64,6 +65,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="apple-touch-icon" sizes="152x152" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="apple-touch-icon" sizes="120x120" href="https://i.ibb.co/pr4X1tyR/image-29.png">
+
         
     <style>
         :root {
@@ -91,7 +93,7 @@
         }
 
         body {
-            font-family: 'Noto Serif TC', 'cwTeXHei', 'cwTeXFangSong', 'cwTeXKai', 'cwTeXMing', 'PingFang TC', 'Microsoft JhengHei', serif;
+             font-family: 'Noto Serif TC', 'cwTeXHei', 'cwTeXFangSong', 'cwTeXKai', 'cwTeXMing', 'PingFang TC', 'Microsoft JhengHei', serif;
             background-image: url('https://i.ibb.co/PvJfB2CW/image.png');
             background-size: cover;
             background-position: center;
@@ -138,118 +140,17 @@
             }
         }
         
-        .main-container {
-            display: flex;
-            max-width: 1200px;
+        #chat-container {
+            max-width: 900px;
             width: 100%;
             margin: 0 auto;
-            gap: 20px;
-            position: relative;
-        }
-        
-        .vtuber-container {
-            width: 280px;
-            height: 350px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            z-index: 10;
-        }
-        
-        .vtuber-avatar {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .vtuber-face {
-            width: 240px;
-            height: 240px;
-            border-radius: 50%;
-            background: #fde2e4;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .vtuber-eyes {
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 180px;
-            height: 40px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .vtuber-eye {
-            width: 60px;
-            height: 40px;
-            background: #fff;
-            border-radius: 50%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .vtuber-pupil {
-            width: 25px;
-            height: 25px;
-            background: #333;
-            border-radius: 50%;
-            position: absolute;
-            animation: blink 4s infinite;
-        }
-        
-        .vtuber-mouth {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70px;
-            height: 30px;
-            background: #ff9aa2;
-            border-radius: 0 0 35px 35px;
-            transition: all 0.2s ease;
-            overflow: hidden;
-        }
-        
-        .vtuber-mouth.talking {
-            height: 50px;
-            animation: talking 0.3s infinite alternate;
-        }
-        
-        .vtuber-mouth-inner {
-            width: 100%;
-            height: 20px;
-            background: #990000;
-            border-radius: 50% / 100%;
-            position: absolute;
-            bottom: 0;
-        }
-        
-        
-        #chat-container {
-            flex: 1;
+            background: white;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             height: calc(100vh - 160px);
-            background: white;
         }
 
         #chat-header {
@@ -420,9 +321,9 @@
             transition: background 0.3s, transform 0.2s;
         }
 
-        #send-btn {
+         #send-btn {
             padding: 0 25px;
-            background: #45b39d;
+            background: #45b39d ;
             color: white;
             border: none;
             border-radius: 25px;
@@ -440,19 +341,19 @@
             transform: translateY(-2px);
         }
 
-        #send-btn:hover {
-            background: #45b39d;
+            #send-btn:hover {
+            background: #45b39d ;
             transform: translateY(-2px);
         }
 
-        #voice-btn:disabled {
+        #voice-btn:disabled{
             background: #a3bffa;
             cursor: not-allowed;
             transform: none;
         }
 
-        #send-btn:disabled {
-            background: #45b39d;
+          #send-btn:disabled {
+            background: #45b39d ;
             cursor: not-allowed;
             transform: none;
         }
@@ -551,66 +452,10 @@
             font-size: 0.8rem;
             display: none;
         }
-        
-        @keyframes talking {
-            from { height: 30px; }
-            to { height: 50px; }
-        }
-
-        @keyframes blink {
-            0%, 5%, 15%, 100% { transform: scaleY(1); }
-            10% { transform: scaleY(0.1); }
-        }
-        
-        @media (max-width: 1000px) {
-            .main-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .vtuber-container {
-                width: 100%;
-                max-width: 280px;
-                height: 200px;
-                margin-bottom: 20px;
-                position: sticky;
-                top: 0;
-            }
-            
-            .vtuber-face {
-                width: 150px;
-                height: 150px;
-            }
-            
-            .vtuber-eyes {
-                width: 120px;
-                top: 35%;
-            }
-            
-            .vtuber-eye {
-                width: 40px;
-                height: 25px;
-            }
-            
-            .vtuber-pupil {
-                width: 15px;
-                height: 15px;
-            }
-            
-            .vtuber-mouth {
-                width: 50px;
-                height: 20px;
-                bottom: 40px;
-            }
-            
-            .vtuber-mouth.talking {
-                height: 30px;
-            }
-        }
 
         @media (max-width: 768px) {
             #chat-container {
-                height: calc(100vh - 340px);
+                height: calc(100vh - 120px);
             }
             #input-container {
                 padding: 20px;
@@ -665,66 +510,46 @@
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- VTUBER 動畫顯示區 -->
-        <div class="vtuber-container">
-            <div class="vtuber-avatar">
-          
-                <div class="vtuber-face">
-                    <div class="vtuber-eyes">
-                        <div class="vtuber-eye">
-                            <div class="vtuber-pupil"></div>
-                        </div>
-                        <div class="vtuber-eye">
-                            <div class="vtuber-pupil"></div>
-                        </div>
-                    </div>
-                    <div class="vtuber-mouth" id="vtuber-mouth">
-                        <div class="vtuber-mouth-inner"></div>
-                    </div>
-                </div>
-              
-            </div>
+
+    <div id="chat-container">
+        <div id="chat-header">
+            <i class="fas fa-robot"></i>
+            <h2>陳SIR</h2>
+            <select id="mode-select">
+                <option value="philosophy">哲理模式</option>
+                <option value="comfort">安慰模式</option>
+            </select>
         </div>
 
-        <div id="chat-container">
-            <div id="chat-header">
-                <i class="fas fa-robot"></i>
-                <h2>陳SIR</h2>
-                <select id="mode-select">
-                    <option value="philosophy">哲理模式</option>
-                    <option value="comfort">安慰模式</option>
-                </select>
-            </div>
+        <div id="chat-output">
+            <!-- Initial message will be added via JavaScript -->
+        </div>
 
-            <div id="chat-output">
-                <!-- Initial message will be added via JavaScript -->
-            </div>
+        <div class="typing-indicator" id="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
 
-            <div class="typing-indicator" id="typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
+            <button id="voice-btn" title="點擊語音輸入">
+                 <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
 
-            <div id="input-container">
-                <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
-                <button id="voice-btn" title="點擊語音輸入">
-                    <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
-                </button>
-                <button id="send-btn">
-                    <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
-                </button>
-                <div id="tts-toggle">
-                    <input type="checkbox" id="tts-auto-play" checked>
-                    <label for="tts-auto-play">自動播放語音</label>
-                </div>
-                <div class="recording-indicator" id="recording-indicator" style="display: none;">
-                    <i class="fas fa-circle"></i> 正在聆聽...
-                </div>
-                <div class="swipe-hint" id="swipe-hint">
-                    滑動取消
-                </div>
+      </button>
+      <button id="send-btn">
+       <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
+         
+            </button>
+            <div id="tts-toggle">
+                <input type="checkbox" id="tts-auto-play" checked>
+                <label for="tts-auto-play">自動播放語音</label>
+            </div>
+            <div class="recording-indicator" id="recording-indicator" style="display: none;">
+                <i class="fas fa-circle"></i> 正在聆聽...
+            </div>
+            <div class="swipe-hint" id="swipe-hint">
+                滑動取消
             </div>
         </div>
     </div>
@@ -747,7 +572,6 @@
         const ttsAutoPlay = document.getElementById('tts-auto-play');
         const recordingIndicator = document.getElementById('recording-indicator');
         const swipeHint = document.getElementById('swipe-hint');
-        const vtuberMouth = document.getElementById('vtuber-mouth');
         let conversationHistory = [];
         let isRecording = false;
         let touchStartY, touchStartX;
@@ -755,42 +579,6 @@
         let recognition;
         let transcript = '';
         let silenceTimeout;
-        let isTalking = false;
-        let currentUtterance = null;
-
-        // VTUBER 嘴型動畫控制
-        function startTalking() {
-            if (!isTalking) {
-                isTalking = true;
-                vtuberMouth.classList.add('talking');
-            }
-        }
-
-        function stopTalking() {
-            if (isTalking) {
-                isTalking = false;
-                vtuberMouth.classList.remove('talking');
-            }
-        }
-
-        // 隨機眨眼動畫
-        function randomBlinking() {
-            const pupils = document.querySelectorAll('.vtuber-pupil');
-            const randomTime = Math.floor(Math.random() * 4000) + 2000;
-            
-            setTimeout(() => {
-                pupils.forEach(pupil => {
-                    pupil.style.animation = 'blink 0.3s ease';
-                    setTimeout(() => {
-                        pupil.style.animation = '';
-                        randomBlinking();
-                    }, 300);
-                });
-            }, randomTime);
-        }
-
-        // 啟動隨機眨眼
-        randomBlinking();
 
         // 檢查瀏覽器是否支援語音識別
         function isSpeechRecognitionSupported() {
@@ -859,10 +647,6 @@
             
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel();
-                if (currentUtterance) {
-                    currentUtterance.onend = null;
-                }
-                stopTalking();
             }
             
             try {
@@ -911,64 +695,22 @@
         // 語音合成
         async function speak(text) {
             if ('speechSynthesis' in window && ttsAutoPlay.checked) {
-                // 取消任何正在進行的語音
-                if (speechSynthesis.speaking) {
-                    speechSynthesis.cancel();
-                    if (currentUtterance) {
-                        currentUtterance.onend = null;
-                    }
-                    stopTalking();
-                }
-                
                 const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
                 const textWithoutEmoji = textWithoutParentheses.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
                 const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
-                
                 for (const sentence of sentences) {
                     if (sentence.trim()) {
                         const utterance = new SpeechSynthesisUtterance(sentence.trim());
                         utterance.lang = 'zh-HK';
                         utterance.rate = 1.05;
                         utterance.pitch = 0.5;
-                        
-                        // 開始說話時啟動嘴型動畫
-                        utterance.onstart = function() {
-                            startTalking();
-                        };
-                        
-                        // 語音暫停時停止嘴型動畫
-                        utterance.onpause = function() {
-                            stopTalking();
-                        };
-                        
-                        // 語音恢復時重新啟動嘴型動畫
-                        utterance.onresume = function() {
-                            startTalking();
-                        };
-                        
-                        // 語音結束時停止嘴型動畫
-                        utterance.onend = function() {
-                            stopTalking();
-                        };
-                        
-                        // 語音出錯時停止嘴型動畫
-                        utterance.onerror = function() {
-                            stopTalking();
-                        };
-                        
-                        currentUtterance = utterance;
                         speechSynthesis.speak(utterance);
-                        
                         await new Promise(resolve => {
                             utterance.onend = resolve;
                         });
-                        
                         await new Promise(resolve => setTimeout(resolve, 200));
                     }
                 }
-                
-                // 確保語音結束後停止嘴型動畫
-                stopTalking();
             }
         }
 
@@ -1074,8 +816,6 @@
                 aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>/g, '');
                 addMessage(aiResponse, 'ai');
                 conversationHistory.push({ role: 'assistant', content: aiResponse });
-                
-                // 使用 VTUBER 來說話
                 speak(aiResponse);
             } catch (error) {
                 addMessage(`錯誤：${error.message}`, 'error');
@@ -1148,16 +888,11 @@
                 addMessage("提示：您的瀏覽器不支援語音輸入功能，請使用最新版Chrome或Edge瀏覽器", 'error');
             }
         });
-        
-        // 監聽語音合成狀態變化
-        speechSynthesis.addEventListener('voiceschanged', () => {
-            const voices = speechSynthesis.getVoices();
-            console.log('語音合成聲音已載入:', voices.length);
-        });
     </script>
     
     <footer class="copyright-footer">
-        <p>Copyright © 2025 陳謙. All rights reserved.</p>
+        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
     </footer>
+    
 </body>
 </html>
