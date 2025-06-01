@@ -86,7 +86,6 @@
             right: 0;
             padding: 5px 10px;
             background-color: #f1f1f1;
-            z-index: 10;
         }
 
         .copyright-footer p {
@@ -106,7 +105,6 @@
             width: 100%;
             margin: 0 auto;
             gap: 20px;
-            position: relative;
         }
         
         .vtuber-container {
@@ -198,6 +196,27 @@
             border-radius: 50% / 100%;
             position: absolute;
             bottom: 0;
+        }
+        
+        .vtuber-hair {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: #a06cd5;
+            border-radius: 50% 50% 0 0;
+            z-index: -1;
+        }
+        
+        .vtuber-name {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-dark);
         }
         
         #chat-container {
@@ -493,38 +512,11 @@
             animation: blink 1s infinite;
         }
 
-        @keyframes talking {
-            from { height: 25px; }
-            to { height: 40px; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
-        @keyframes blink {
-            0%, 5%, 15%, 100% { transform: scaleY(1); }
-            10% { transform: scaleY(0.1); }
-        }
-        
-        /* 浮動VTUBER容器，適用於手機版 */
-        .vtuber-floating-container {
-            display: none;
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 1000;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .vtuber-floating-face {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        
         .swipe-hint {
             position: absolute;
             top: 0px;
@@ -538,171 +530,73 @@
             display: none;
         }
         
-        /* 改進的響應式設計 */
+        @keyframes talking {
+            from { height: 30px; }
+            to { height: 50px; }
+        }
+
+        @keyframes blink {
+            0%, 5%, 15%, 100% { transform: scaleY(1); }
+            10% { transform: scaleY(0.1); }
+        }
+        
         @media (max-width: 1000px) {
-            .header {
-                margin-bottom: 20px;
-            }
-            
             .main-container {
                 flex-direction: column;
                 align-items: center;
             }
             
-            /* 在寬度較小的螢幕上，VTUBER固定在右上角 */
-            .vtuber-sticky-container {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                width: 160px;
-                height: 160px;
-                border-radius: var(--radius);
-                background: rgba(255,255,255,0.95);
-                z-index: 100;
-                box-shadow: var(--shadow);
-            }
-            
             .vtuber-container {
-                width: 160px;
-                height: 160px;
-                padding: 10px;
+                width: 100%;
+                max-width: 280px;
+                height: 200px;
+                margin-bottom: 20px;
             }
             
             .vtuber-face {
-                width: 120px;
-                height: 140px;
+                width: 150px;
+                height: 150px;
             }
             
             .vtuber-eyes {
-                top: 50px;
-                width: 90px;
+                width: 120px;
+                top: 35%;
             }
             
             .vtuber-eye {
-                width: 30px;
-                height: 20px;
+                width: 40px;
+                height: 25px;
             }
             
             .vtuber-pupil {
-                width: 12px;
-                height: 12px;
-            }
-            
-            .vtuber-eyebrows {
-                top: 35px;
-                width: 90px;
-            }
-            
-            .vtuber-eyebrow {
-                width: 25px;
-                height: 4px;
-            }
-            
-            .vtuber-glasses {
-                top: 45px;
-                width: 100px;
-                height: 25px;
-            }
-            
-            .vtuber-glass-frame {
-                width: 100px;
-                height: 25px;
-                border-width: 2px;
-            }
-            
-            .vtuber-glass-lens {
-                width: 28px;
-                height: 20px;
-                border-width: 1px;
-            }
-            
-            .vtuber-nose {
-                top: 75px;
-                width: 10px;
-                height: 5px;
+                width: 15px;
+                height: 15px;
             }
             
             .vtuber-mouth {
-                bottom: 35px;
-                width: 35px;
-                height: 15px;
-                border-width: 1px;
+                width: 50px;
+                height: 20px;
+                bottom: 40px;
             }
             
             .vtuber-mouth.talking {
-                height: 25px;
-            }
-            
-            .vtuber-hair {
-                height: 60px;
-            }
-            
-            .vtuber-hair-side {
-                top: 40px;
-                height: 70px;
-                width: 35px;
-            }
-            
-            .vtuber-collar {
-                bottom: 5px;
-                width: 50px;
-                height: 20px;
-            }
-            
-            .vtuber-name {
-                bottom: 5px;
-                font-size: 0.9rem;
-            }
-            
-            #chat-container {
-                width: 100%;
+                height: 30px;
             }
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 15px;
-            }
-            
             #chat-container {
                 height: calc(100vh - 340px);
             }
-            
             #input-container {
                 padding: 20px;
             }
-            
             .header h1 {
                 font-size: 2.2rem;
             }
-            
             #voice-btn, #send-btn {
                 padding: 0 15px;
                 font-size: 1rem;
-            }
-            
-            /* 為小螢幕調整VTUBER的位置 */
-            .vtuber-sticky-container {
-                top: 10px;
-                right: 10px;
-                width: 120px;
-                height: 120px;
-            }
-            
-            .vtuber-container {
-                width: 120px;
-                height: 120px;
-                padding: 5px;
-            }
-            
-            .vtuber-face {
-                width: 90px;
-                height: 100px;
-            }
-            
-            /* 啟用懸浮VTUBER頭像 */
-            .vtuber-floating-container {
-                display: block;
             }
         }
 
@@ -711,41 +605,20 @@
                 flex-wrap: wrap;
                 gap: 10px;
             }
-            
             #voice-btn, #send-btn {
                 padding: 0 15px;
                 width: 48%;
                 font-size: 0.9rem;
             }
-            
             .swipe-hint {
                 top: 0px;
                 font-size: 0.7rem;
             }
-            
             #tts-toggle {
                 order: 3;
                 width: 100%;
                 justify-content: center;
                 margin-top: 10px;
-            }
-            
-            /* 調整超小螢幕上VTUBER的位置 */
-            .vtuber-sticky-container {
-                top: 5px;
-                right: 5px;
-                width: 100px;
-                height: 100px;
-            }
-            
-            .vtuber-container {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .vtuber-face {
-                width: 80px;
-                height: 90px;
             }
         }
 
@@ -768,16 +641,13 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>陳SIR的解憂雜貨店</h1>
-    </div>
 
-  
-       <div class="main-container">
+
+    <div class="main-container">
         <!-- VTUBER 動畫顯示區 -->
         <div class="vtuber-container">
             <div class="vtuber-avatar">
-            
+                <div class="vtuber-hair"></div>
                 <div class="vtuber-face">
                     <div class="vtuber-eyes">
                         <div class="vtuber-eye">
@@ -791,10 +661,9 @@
                         <div class="vtuber-mouth-inner"></div>
                     </div>
                 </div>
-    
+                <div class="vtuber-name">陳SIR</div>
             </div>
         </div>
-
 
         <div id="chat-container">
             <div id="chat-header">
@@ -838,31 +707,6 @@
         </div>
     </div>
 
-    <!-- 手機版懸浮頭像 -->
-    <div class="vtuber-floating-container" id="vtuber-floating">
-        <div class="vtuber-avatar">
-            <div class="vtuber-face">
-                <div class="vtuber-eyes">
-                    <div class="vtuber-eye">
-                        <div class="vtuber-pupil"></div>
-                    </div>
-                    <div class="vtuber-eye">
-                        <div class="vtuber-pupil"></div>
-                    </div>
-                </div>
-                <div class="vtuber-glasses">
-                    <div class="vtuber-glass-frame">
-                        <div class="vtuber-glass-lens"></div>
-                        <div class="vtuber-glass-lens"></div>
-                    </div>
-                </div>
-                <div class="vtuber-mouth" id="vtuber-floating-mouth">
-                    <div class="vtuber-mouth-inner"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         const API_KEYS = [
             "sk-MoqwsgO8P9MEoCrftvdSYA",
@@ -882,7 +726,6 @@
         const recordingIndicator = document.getElementById('recording-indicator');
         const swipeHint = document.getElementById('swipe-hint');
         const vtuberMouth = document.getElementById('vtuber-mouth');
-        const vtuberFloatingMouth = document.getElementById('vtuber-floating-mouth');
         let conversationHistory = [];
         let isRecording = false;
         let touchStartY, touchStartX;
@@ -893,33 +736,11 @@
         let isTalking = false;
         let currentUtterance = null;
 
-        // 眼睛追蹤滑鼠/觸控
-        document.addEventListener('mousemove', moveEyes);
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                moveEyes({
-                    clientX: e.touches[0].clientX,
-                    clientY: e.touches[0].clientY
-                });
-            }
-        });
-        
-        function moveEyes(event) {
-            const pupils = document.querySelectorAll('.vtuber-pupil');
-            pupils.forEach(pupil => {
-                const rect = pupil.getBoundingClientRect();
-                const x = (event.clientX - rect.left) / 30;
-                const y = (event.clientY - rect.top) / 30;
-                pupil.style.transform = `translate(${x}px, ${y}px)`;
-            });
-        }
-
         // VTUBER 嘴型動畫控制
         function startTalking() {
             if (!isTalking) {
                 isTalking = true;
                 vtuberMouth.classList.add('talking');
-                vtuberFloatingMouth.classList.add('talking');
             }
         }
 
@@ -927,7 +748,6 @@
             if (isTalking) {
                 isTalking = false;
                 vtuberMouth.classList.remove('talking');
-                vtuberFloatingMouth.classList.remove('talking');
             }
         }
 
@@ -1244,17 +1064,6 @@
             voiceBtn.disabled = false;
         }
 
-        // 滾動事件處理，控制浮動頭像
-        window.addEventListener('scroll', () => {
-            const floatingVtuber = document.getElementById('vtuber-floating');
-            // 如果滾動超過一定位置，顯示浮動頭像
-            if (window.innerWidth <= 768 && window.scrollY > 200) {
-                floatingVtuber.style.display = 'block';
-            } else {
-                floatingVtuber.style.display = 'none';
-            }
-        });
-
         // 事件監聽器
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
@@ -1326,7 +1135,7 @@
     </script>
     
     <footer class="copyright-footer">
-        <p>Copyright © 2025 陳謙. All rights reserved.</p>
+        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
     </footer>
 </body>
 </html>
