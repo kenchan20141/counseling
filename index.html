@@ -44,20 +44,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>陳SIR的解憂雜貨店</title>
 
-<!-- 添加到主畫面設定 -->
+    <!-- 添加到主畫面設定 -->
     <meta name="application-name" content="陳SIR的解憂雜貨店">
     <meta name="apple-mobile-web-app-title" content="陳SIR的解憂雜貨店">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-
-        
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Android 圖示 -->
+    <!-- Android 圖示 -->
     <link rel="icon" sizes="192x192" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="icon" sizes="144x144" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="icon" sizes="96x96" href="https://i.ibb.co/pr4X1tyR/image-29.png">
@@ -65,7 +63,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="apple-touch-icon" sizes="152x152" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <link rel="apple-touch-icon" sizes="120x120" href="https://i.ibb.co/pr4X1tyR/image-29.png">
-
         
     <style>
         :root {
@@ -93,7 +90,7 @@
         }
 
         body {
-             font-family: 'Noto Serif TC', 'cwTeXHei', 'cwTeXFangSong', 'cwTeXKai', 'cwTeXMing', 'PingFang TC', 'Microsoft JhengHei', serif;
+            font-family: 'Noto Serif TC', 'cwTeXHei', 'cwTeXFangSong', 'cwTeXKai', 'cwTeXMing', 'PingFang TC', 'Microsoft JhengHei', serif;
             background-image: url('https://i.ibb.co/PvJfB2CW/image.png');
             background-size: cover;
             background-position: center;
@@ -321,9 +318,9 @@
             transition: background 0.3s, transform 0.2s;
         }
 
-         #send-btn {
+        #send-btn {
             padding: 0 25px;
-            background: #45b39d ;
+            background: #45b39d;
             color: white;
             border: none;
             border-radius: 25px;
@@ -341,19 +338,19 @@
             transform: translateY(-2px);
         }
 
-            #send-btn:hover {
-            background: #45b39d ;
+        #send-btn:hover {
+            background: #45b39d;
             transform: translateY(-2px);
         }
 
-        #voice-btn:disabled{
+        #voice-btn:disabled {
             background: #a3bffa;
             cursor: not-allowed;
             transform: none;
         }
 
-          #send-btn:disabled {
-            background: #45b39d ;
+        #send-btn:disabled {
+            background: #45b39d;
             cursor: not-allowed;
             transform: none;
         }
@@ -453,36 +450,166 @@
             display: none;
         }
 
+        /* VTUBER 頭像相關樣式 */
+        .vtuber-container {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            border: 3px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .vtuber-avatar {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vtuber-face {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #fde2e4;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vtuber-eyes {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90px;
+            height: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .vtuber-eye {
+            width: 30px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vtuber-pupil {
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            position: absolute;
+            animation: blink 4s infinite;
+        }
+
+        .vtuber-mouth {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 15px;
+            background: #ff9aa2;
+            border-radius: 0 0 20px 20px;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .vtuber-mouth.talking {
+            height: 20px;
+            animation: talking 0.3s infinite alternate;
+        }
+
+        .vtuber-mouth-inner {
+            width: 100%;
+            height: 10px;
+            background: #990000;
+            border-radius: 50% / 100%;
+            position: absolute;
+            bottom: 0;
+        }
+
+        @keyframes talking {
+            from { height: 15px; }
+            to { height: 20px; }
+        }
+
+        @keyframes blink {
+            0%, 5%, 15%, 100% { transform: scaleY(1); }
+            10% { transform: scaleY(0.1); }
+        }
+
+        /* 移動端適配 */
         @media (max-width: 768px) {
+            .vtuber-container {
+                width: 100px;
+                height: 100px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .vtuber-face {
+                width: 80px;
+                height: 80px;
+            }
+
+            .vtuber-eyes {
+                width: 60px;
+                height: 15px;
+            }
+
+            .vtuber-eye {
+                width: 20px;
+                height: 15px;
+            }
+
+            .vtuber-pupil {
+                width: 8px;
+                height: 8px;
+            }
+
+            .vtuber-mouth {
+                width: 30px;
+                height: 10px;
+                bottom: 20px;
+            }
+
+            .vtuber-mouth.talking {
+                height: 18px;
+            }
+
             #chat-container {
                 height: calc(100vh - 120px);
             }
+
             #input-container {
                 padding: 20px;
-            }
-            .header h1 {
-                font-size: 2.2rem;
-            }
-            #voice-btn, #send-btn {
-                padding: 0 15px;
-                font-size: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            #input-container {
                 flex-wrap: wrap;
                 gap: 10px;
             }
+
             #voice-btn, #send-btn {
                 padding: 0 15px;
+                font-size: 1rem;
                 width: 48%;
-                font-size: 0.9rem;
             }
-            .swipe-hint {
-                top: 0px;
-                font-size: 0.7rem;
-            }
+
             #tts-toggle {
                 order: 3;
                 width: 100%;
@@ -491,6 +618,7 @@
             }
         }
 
+        /* 垂直滾動軸樣式 */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -510,6 +638,24 @@
     </style>
 </head>
 <body>
+    <!-- VTUBER 動畫顯示區 -->
+    <div class="vtuber-container" id="vtuber-container">
+        <div class="vtuber-avatar">
+            <div class="vtuber-face">
+                <div class="vtuber-eyes">
+                    <div class="vtuber-eye">
+                        <div class="vtuber-pupil"></div>
+                    </div>
+                    <div class="vtuber-eye">
+                        <div class="vtuber-pupil"></div>
+                    </div>
+                </div>
+                <div class="vtuber-mouth" id="vtuber-mouth">
+                    <div class="vtuber-mouth-inner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="chat-container">
         <div id="chat-header">
@@ -534,12 +680,10 @@
         <div id="input-container">
             <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
             <button id="voice-btn" title="點擊語音輸入">
-                 <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
-
-      </button>
-      <button id="send-btn">
-       <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
-         
+                <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
+            </button>
+            <button id="send-btn">
+                <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
             </button>
             <div id="tts-toggle">
                 <input type="checkbox" id="tts-auto-play" checked>
@@ -553,6 +697,10 @@
             </div>
         </div>
     </div>
+
+    <footer class="copyright-footer">
+        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
+    </footer>
 
     <script>
         const API_KEYS = [
@@ -572,6 +720,9 @@
         const ttsAutoPlay = document.getElementById('tts-auto-play');
         const recordingIndicator = document.getElementById('recording-indicator');
         const swipeHint = document.getElementById('swipe-hint');
+        const vtuberMouth = document.getElementById('vtuber-mouth');
+        const vtuberContainer = document.getElementById('vtuber-container');
+        
         let conversationHistory = [];
         let isRecording = false;
         let touchStartY, touchStartX;
@@ -579,6 +730,45 @@
         let recognition;
         let transcript = '';
         let silenceTimeout;
+        let isTalking = false;
+
+        // VTUBER 嘴型動畫控制
+        function startTalking() {
+            if (!isTalking) {
+                isTalking = true;
+                vtuberMouth.classList.add('talking');
+                vtuberContainer.style.transform = 'scale(1.1)';
+                vtuberContainer.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
+            }
+        }
+
+        function stopTalking() {
+            if (isTalking) {
+                isTalking = false;
+                vtuberMouth.classList.remove('talking');
+                vtuberContainer.style.transform = '';
+                vtuberContainer.style.boxShadow = '';
+            }
+        }
+
+        // 隨機眨眼動畫
+        function randomBlinking() {
+            const pupils = document.querySelectorAll('.vtuber-pupil');
+            const randomTime = Math.floor(Math.random() * 4000) + 2000;
+            
+            setTimeout(() => {
+                pupils.forEach(pupil => {
+                    pupil.style.animation = 'blink 0.3s ease';
+                    setTimeout(() => {
+                        pupil.style.animation = '';
+                        randomBlinking();
+                    }, 300);
+                });
+            }, randomTime);
+        }
+
+        // 啟動隨機眨眼
+        randomBlinking();
 
         // 檢查瀏覽器是否支援語音識別
         function isSpeechRecognitionSupported() {
@@ -647,6 +837,7 @@
             
             if (speechSynthesis.speaking) {
                 speechSynthesis.cancel();
+                stopTalking();
             }
             
             try {
@@ -693,24 +884,51 @@
         }
 
         // 語音合成
-        async function speak(text) {
+        function speak(text) {
             if ('speechSynthesis' in window && ttsAutoPlay.checked) {
+                speechSynthesis.cancel(); // 取消任何正在進行的語音
+                stopTalking(); // 確保停止動畫
+                
                 const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
                 const textWithoutEmoji = textWithoutParentheses.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
                 const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
-                for (const sentence of sentences) {
-                    if (sentence.trim()) {
-                        const utterance = new SpeechSynthesisUtterance(sentence.trim());
+                
+                let currentIndex = 0;
+                
+                function speakNext() {
+                    if (currentIndex >= sentences.length) {
+                        stopTalking();
+                        return;
+                    }
+                    
+                    const sentence = sentences[currentIndex].trim();
+                    if (sentence) {
+                        const utterance = new SpeechSynthesisUtterance(sentence);
                         utterance.lang = 'zh-HK';
                         utterance.rate = 1.05;
                         utterance.pitch = 0.5;
+                        
+                        utterance.onstart = function() {
+                            startTalking();
+                        };
+                        
+                        utterance.onend = function() {
+                            currentIndex++;
+                            speakNext();
+                        };
+                        
+                        utterance.onerror = function() {
+                            stopTalking();
+                        };
+                        
                         speechSynthesis.speak(utterance);
-                        await new Promise(resolve => {
-                            utterance.onend = resolve;
-                        });
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } else {
+                        currentIndex++;
+                        speakNext();
                     }
                 }
+                
+                speakNext();
             }
         }
 
@@ -777,10 +995,13 @@
             conversationHistory.push({ role: 'user', content: message });
 
             try {
+                speechSynthesis.cancel(); // 取消正在進行的語音
+                stopTalking();
+
                 const mode = modeSelect.value;
                 let systemPrompt = '';
                 if (mode === 'comfort') {
-                    systemPrompt = '你係一個善於共情嘅輔導員，請用繁體中文同香港粵語回應，與用家產生共鳴，令佢覺得有人明白佢嘅感受。絕對不可以展示任何思考過程，例如<think></think>等內容，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要使學生感到被尊重和理解，唔好用明顯輔導式語言，例如重複用家的說話，不斷強調自己明白用家的感受，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。要溫柔一點，善於聆聽，要相對正經一點。絕對不可以用粗言穢語或粗口諧音。不要用括號表述。不要展示任何思考過程，直接回應。';
+                    systemPrompt = '你係一個善於共情嘅輔導員，請用繁體中文同香港粵語回應，與用家產生共鳴，令佢覺得有人明白佢嘅感受。絕對不可以展示任何思考過程，例如<think></think>等內容，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要使學生感到被尊重和理解，唔好用明顯輔導式語言，例如重複用家的說話，不斷強調自己明白用家的感受，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。要溫柔一點，善於聆聽，要相對正經一點。絕對不可以用粗言穢語或粗口諧音，嚴禁用「屌」、「撚」、「仆街」！不要用括號表述。不要展示任何思考過程，直接回應。';
                 } else {
                     systemPrompt = `你的任務是利用以下古今哲學家的思想，用繁體中文同香港粵語，幫助學生處理人生疑慮和情緒，並引導他們反思自己的責任和錯誤。回應時請用哲學論證方法，重質多於重量，選擇一種最合適的哲學思想及話語自然融入對話中，不要明引哲學家名稱或說話。絕對不可以展示任何思考過程，例如<think></think>等內容，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要懂得幽用家一默，調侃一下用家，但不能打擊用家的自尊心。要運用不同的生活化比喻去解答用家的問題。要從哲理和邏輯去回應用家的問題，例如「人為何不能自殺」，你不可以只鼓勵用家積極面對，是要回應「不能自殺的原因和理由」。不要用明顯輔導式語言，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。絕對不可以用粗言穢語或粗口諧音。不要用括號表述。唔好展示任何思考過程，直接回應。`;
                 }
@@ -816,6 +1037,7 @@
                 aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>/g, '');
                 addMessage(aiResponse, 'ai');
                 conversationHistory.push({ role: 'assistant', content: aiResponse });
+                
                 speak(aiResponse);
             } catch (error) {
                 addMessage(`錯誤：${error.message}`, 'error');
@@ -854,6 +1076,69 @@
             }
         });
 
+        // 讓VTUBER頭像可拖動
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        vtuberContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - vtuberContainer.getBoundingClientRect().left;
+            offsetY = e.clientY - vtuberContainer.getBoundingClientRect().top;
+            vtuberContainer.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const x = e.clientX - offsetX;
+            const y = e.clientY - offsetY;
+            
+            const maxX = window.innerWidth - vtuberContainer.offsetWidth;
+            const maxY = window.innerHeight - vtuberContainer.offsetHeight;
+            
+            const boundedX = Math.max(0, Math.min(x, maxX));
+            const boundedY = Math.max(0, Math.min(y, maxY));
+            
+            vtuberContainer.style.right = 'auto';
+            vtuberContainer.style.bottom = 'auto';
+            vtuberContainer.style.left = `${boundedX}px`;
+            vtuberContainer.style.top = `${boundedY}px`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            vtuberContainer.style.cursor = 'grab';
+        });
+
+        // 觸控設備的拖動支持
+        vtuberContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            offsetX = e.touches[0].clientX - vtuberContainer.getBoundingClientRect().left;
+            offsetY = e.touches[0].clientY - vtuberContainer.getBoundingClientRect().top;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            
+            const x = e.touches[0].clientX - offsetX;
+            const y = e.touches[0].clientY - offsetY;
+            
+            const maxX = window.innerWidth - vtuberContainer.offsetWidth;
+            const maxY = window.innerHeight - vtuberContainer.offsetHeight;
+            
+            const boundedX = Math.max(0, Math.min(x, maxX));
+            const boundedY = Math.max(0, Math.min(y, maxY));
+            
+            vtuberContainer.style.right = 'auto';
+            vtuberContainer.style.bottom = 'auto';
+            vtuberContainer.style.left = `${boundedX}px`;
+            vtuberContainer.style.top = `${boundedY}px`;
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
         // 初始問候語
         document.addEventListener('DOMContentLoaded', () => {
             const greetings = [
@@ -889,10 +1174,5 @@
             }
         });
     </script>
-    
-    <footer class="copyright-footer">
-        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
-    </footer>
-    
 </body>
 </html>
