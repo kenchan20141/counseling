@@ -1,4 +1,43 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
@@ -52,7 +91,7 @@
         }
 
         body {
-             font-family: 'Noto Serif TC', 'cwTeXHei', 'cwTeXFangSong', 'cwTeXKai', 'cwTeXMing', 'PingFang TC', 'Microsoft JhengHei', serif;
+            font-family: 'Noto Serif TC', 'cwTeXHei', 'cwTeXFangSong', 'cwTeXKai', 'cwTeXMing', 'PingFang TC', 'Microsoft JhengHei', serif;
             background-image: url('https://i.ibb.co/PvJfB2CW/image.png');
             background-size: cover;
             background-position: center;
@@ -105,6 +144,7 @@
             width: 100%;
             margin: 0 auto;
             gap: 20px;
+            position: relative;
         }
         
         .vtuber-container {
@@ -113,13 +153,15 @@
             background: rgba(255, 255, 255, 0.8);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            position: relative;
+            position: sticky;
+            top: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 10px;
+            z-index: 10;
         }
         
         .vtuber-avatar {
@@ -198,16 +240,7 @@
             bottom: 0;
         }
         
-        .vtuber-hair {
-            position: absolute;
-            top: -20px;
-            left: 0;
-            width: 100%;
-            height: 120px;
-            background: #a06cd5;
-            border-radius: 50% 50% 0 0;
-            z-index: -1;
-        }
+      
         
         .vtuber-name {
             position: absolute;
@@ -398,9 +431,9 @@
             transition: background 0.3s, transform 0.2s;
         }
 
-         #send-btn {
+        #send-btn {
             padding: 0 25px;
-            background: #45b39d ;
+            background: #45b39d;
             color: white;
             border: none;
             border-radius: 25px;
@@ -418,19 +451,19 @@
             transform: translateY(-2px);
         }
 
-            #send-btn:hover {
-            background: #45b39d ;
+        #send-btn:hover {
+            background: #45b39d;
             transform: translateY(-2px);
         }
 
-        #voice-btn:disabled{
+        #voice-btn:disabled {
             background: #a3bffa;
             cursor: not-allowed;
             transform: none;
         }
 
-          #send-btn:disabled {
-            background: #45b39d ;
+        #send-btn:disabled {
+            background: #45b39d;
             cursor: not-allowed;
             transform: none;
         }
@@ -551,6 +584,8 @@
                 max-width: 280px;
                 height: 200px;
                 margin-bottom: 20px;
+                position: sticky;
+                top: 0;
             }
             
             .vtuber-face {
@@ -641,13 +676,11 @@
     </style>
 </head>
 <body>
-
-
     <div class="main-container">
         <!-- VTUBER 動畫顯示區 -->
         <div class="vtuber-container">
             <div class="vtuber-avatar">
-                <div class="vtuber-hair"></div>
+          
                 <div class="vtuber-face">
                     <div class="vtuber-eyes">
                         <div class="vtuber-eye">
@@ -688,10 +721,10 @@
             <div id="input-container">
                 <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
                 <button id="voice-btn" title="點擊語音輸入">
-                     <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
+                    <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
                 </button>
                 <button id="send-btn">
-                   <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
+                    <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
                 </button>
                 <div id="tts-toggle">
                     <input type="checkbox" id="tts-auto-play" checked>
@@ -1135,7 +1168,7 @@
     </script>
     
     <footer class="copyright-footer">
-        <p>Copyright © 2025 陳冠健、黃子謙. All rights reserved.</p>
+        <p>Copyright © 2025 陳謙. All rights reserved.</p>
     </footer>
 </body>
 </html>
