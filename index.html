@@ -1,58 +1,19 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>陳SIR的解憂雜貨店</title>
+    <title>陳SIR教室</title>
 
     <!-- 添加到主畫面設定 -->
-    <meta name="application-name" content="陳SIR的解憂雜貨店">
-    <meta name="apple-mobile-web-app-title" content="陳SIR的解憂雜貨店">
+    <meta name="application-name" content="陳SIR教室">
+    <meta name="apple-mobile-web-app-title" content="陳SIR教室">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://i.ibb.co/pr4X1tyR/image-29.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Android 圖示 -->
@@ -81,6 +42,18 @@
             --shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
             --radius: 20px;
             --radius-sm: 12px;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --active-orange: #FF8C00;
+            --hunger-red: #FF4444;
+            --hunger-yellow: #FFB84D;
+            --hunger-green: #4CAF50;
+            --personality-purple: #9C27B0;
+            --personality-blue: #2196F3;
+            --personality-green: #4CAF50;
+            --personality-orange: #FF9800;
+            --personality-red: #F44336;
+            --personality-pink: #E91E63;
         }
 
         * {
@@ -99,6 +72,7 @@
             display: flex;
             flex-direction: column;
             padding: 25px;
+            padding-top: 100px;
         }
 
         .header {
@@ -107,6 +81,7 @@
             max-width: 900px;
             margin-left: auto;
             margin-right: auto;
+            position: relative;
         }
 
         .header h1 {
@@ -124,6 +99,7 @@
             right: 0;
             padding: 5px 10px;
             background-color: #f1f1f1;
+            z-index: 1;
         }
 
         .copyright-footer p {
@@ -137,6 +113,124 @@
             }
         }
         
+        /* 頂部控制區域 */
+        .top-controls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(169, 204, 227  , 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 102;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .shop-button, .settings-button {
+            background: linear-gradient(135deg, var(--gold), var(--silver));
+            color: white;
+            padding: 12px 18px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .settings-button {
+            background: #abb2b9 ;
+            padding: 12px 15px;
+            width: 40px;
+        }
+
+        /* 移動端適配 */
+    @media (max-width: 768px) {
+        /* 設置按鈕使用自動寬度 */
+        .settings-button {
+            flex: 0 0 auto !important; /* 禁止伸縮 */
+            padding: 8px 10px !important; /* 進一步減少內邊距 */
+            min-width: unset !important; /* 移除最小寬度限制 */
+        }
+        
+       
+    }
+
+        .shop-button:hover, .settings-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .shop-button .points {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+
+        .hunger-bar-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+        }
+
+        .hunger-icon {
+            font-size: 1.2rem;
+            color: var(--hunger-green);
+        }
+
+        .hunger-icon.hungry {
+            color: var(--hunger-yellow);
+        }
+
+        .hunger-icon.very-hungry {
+            color: var(--hunger-red);
+        }
+
+        .hunger-bar {
+            flex: 1;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .hunger-fill {
+            height: 100%;
+            background: var(--hunger-green);
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .hunger-fill.hungry {
+            background: var(--hunger-yellow);
+        }
+
+        .hunger-fill.very-hungry {
+            background: var(--hunger-red);
+        }
+
+        .hunger-percentage {
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+        }
+
         #chat-container {
             max-width: 900px;
             width: 100%;
@@ -148,6 +242,8 @@
             display: flex;
             flex-direction: column;
             height: calc(100vh - 160px);
+            position: relative;
+            z-index: 10;
         }
 
         #chat-header {
@@ -280,16 +376,18 @@
 
         #input-container {
             display: flex;
-            padding: 25px;
+            padding: 20px 25px;
             background: white;
             border-top: 1px solid #edf2f7;
             gap: 15px;
             align-items: center;
             position: relative;
+            flex-wrap: wrap;
         }
 
         #user-input {
             flex: 1;
+            min-width: 200px;
             padding: 18px 25px;
             border: 2px solid #e2e8f0;
             border-radius: 25px;
@@ -303,8 +401,8 @@
             box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
         }
 
-        #voice-btn {
-            padding: 0 25px;
+        #voice-btn, #send-btn {
+            padding: 0 20px;
             background: var(--primary);
             color: white;
             border: none;
@@ -314,23 +412,14 @@
             height: 50px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: background 0.3s, transform 0.2s;
+            min-width: 50px;
+            flex-shrink: 0;
         }
 
         #send-btn {
-            padding: 0 25px;
             background: #45b39d;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.3s, transform 0.2s;
         }
 
         #voice-btn:hover {
@@ -372,6 +461,9 @@
             gap: 10px;
             font-size: 1.1rem;
             color: var(--text-dark);
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
         }
 
         .typing-indicator {
@@ -467,6 +559,12 @@
             z-index: 100;
             border: 3px solid var(--primary);
             transition: all 0.3s ease;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .vtuber-container:active {
+            cursor: grabbing;
         }
 
         .vtuber-avatar {
@@ -476,6 +574,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            pointer-events: none;
         }
 
         .vtuber-face {
@@ -485,6 +584,26 @@
             background: #fde2e4;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .vtuber-face.hungry {
+            background: #e8d5d6;
+            transform: scale(0.95);
+        }
+
+        .vtuber-face.very-hungry {
+            background: #dcc5c6;
+            transform: scale(0.9);
+        }
+
+        .vtuber-hair {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            z-index: 2;
         }
 
         .vtuber-eyes {
@@ -496,6 +615,17 @@
             height: 25px;
             display: flex;
             justify-content: space-between;
+            z-index: 3;
+        }
+
+        .vtuber-face.hungry .vtuber-eyes {
+            opacity: 0.8;
+            transform: translate(-50%, -50%) scale(0.9);
+        }
+
+        .vtuber-face.very-hungry .vtuber-eyes {
+            opacity: 0.6;
+            transform: translate(-50%, -50%) scale(0.8);
         }
 
         .vtuber-eye {
@@ -507,6 +637,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .vtuber-face.hungry .vtuber-eye {
+            transform: scaleY(0.8);
+        }
+
+        .vtuber-face.very-hungry .vtuber-eye {
+            transform: scaleY(0.6);
         }
 
         .vtuber-pupil {
@@ -529,11 +667,37 @@
             border-radius: 0 0 20px 20px;
             transition: all 0.2s ease;
             overflow: hidden;
+            z-index: 3;
+        }
+
+        .vtuber-face.hungry .vtuber-mouth {
+            width: 35px;
+            height: 12px;
+            background: #e08a8a;
+        }
+
+        .vtuber-face.very-hungry .vtuber-mouth {
+            width: 30px;
+            height: 10px;
+            background: #cc7a7a;
+            border-radius: 50%;
         }
 
         .vtuber-mouth.talking {
-            height: 20px;
             animation: talking 0.3s infinite alternate;
+        }
+
+        .vtuber-face.hungry .vtuber-mouth.talking {
+            animation: hungryTalking 0.4s infinite alternate;
+        }
+
+        .vtuber-face.very-hungry .vtuber-mouth.talking {
+            animation: veryHungryTalking 0.5s infinite alternate;
+        }
+
+        .vtuber-mouth.eating {
+            animation: eating 0.5s ease-in-out 3;
+            background: #ffb347;
         }
 
         .vtuber-mouth-inner {
@@ -550,23 +714,610 @@
             to { height: 20px; }
         }
 
+        @keyframes hungryTalking {
+            from { height: 12px; }
+            to { height: 16px; }
+        }
+
+        @keyframes veryHungryTalking {
+            from { height: 10px; }
+            to { height: 13px; }
+        }
+
+        @keyframes eating {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
         @keyframes blink {
             0%, 5%, 15%, 100% { transform: scaleY(1); }
             10% { transform: scaleY(0.1); }
         }
 
+        /* 商店和設置彈窗樣式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .points-display {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--gold), var(--silver));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .points-display i {
+            color: var(--gold);
+        }
+
+        .shop-tabs, .settings-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e2e8f0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: none;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .shop-item {
+            background: #f9f9f9;
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+        }
+
+        .shop-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .shop-item.owned {
+            border-color: var(--secondary);
+        }
+
+        .item-preview {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .expression-preview {
+            background: #fde2e4;
+            border-radius: 50%;
+        }
+
+        .food-preview {
+            background: #fff3cd;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .personality-preview {
+            background: linear-gradient(135deg, var(--personality-purple), var(--personality-blue));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .expression-eyes {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 15px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 2;
+        }
+
+        .expression-eye {
+            width: 20px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .expression-pupil {
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 6px;
+        }
+
+        .expression-mouth {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 10px;
+            background: #ff9aa2;
+            border-radius: 0 0 15px 15px;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .expression-mouth-inner {
+            width: 100%;
+            height: 6px;
+            background: #990000;
+            border-radius: 50% / 100%;
+            position: absolute;
+            bottom: 0;
+        }
+
+        /* 髮型樣式 */
+        .hair-1 {
+            background: #8B4513;
+            clip-path: polygon(0 0, 100% 0, 80% 50%, 20% 50%);
+            height: 35px;
+        }
+
+        .hair-2 {
+            background: #FFD700;
+            clip-path: polygon(0 0, 100% 0, 90% 40%, 60% 50%, 30% 40%);
+            height: 40px;
+        }
+
+        .hair-3 {
+            background: #FF4500;
+            clip-path: polygon(0 0, 100% 0, 70% 60%, 30% 60%);
+            height: 35px;
+        }
+
+        .hair-4 {
+            background: #4682B4;
+            clip-path: polygon(0 0, 100% 0, 85% 30%, 50% 50%, 15% 30%);
+            height: 30px;
+        }
+
+        .hair-5 {
+            background: #228B22;
+            clip-path: polygon(0 0, 100% 0, 95% 45%, 70% 55%, 30% 55%, 5% 45%);
+            height: 40px;
+        }
+
+        .hair-6 {
+            background: #9932CC;
+            clip-path: polygon(0 0, 100% 0, 80% 40%, 60% 60%, 40% 60%, 20% 40%);
+            height: 45px;
+        }
+
+        .shop-item h3 {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        .shop-item .price {
+            font-size: 0.9rem;
+            color: var(--gold);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .shop-btn {
+            padding: 6px 12px;
+            border-radius: 15px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .buy-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .buy-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .buy-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .use-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .use-btn:hover {
+            background: #3daa65;
+        }
+
+        .shop-item.owned .use-btn {
+            background: var(--secondary);
+        }
+
+        .shop-item.owned .use-btn.active {
+            background: var(--active-orange);
+        }
+
+        /* 設置界面樣式 */
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .name-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .name-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .name-input:focus {
+            border-color: var(--primary);
+        }
+
+        .name-save-btn {
+            padding: 12px 20px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .name-save-btn:hover {
+            background: #3daa65;
+        }
+
+        .name-save-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .current-name-display {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f4f8;
+            border-radius: 8px;
+            color: var(--text-dark);
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .error-message-input {
+            background: #ffe6e6;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #e57373;
+        }
+
+        /* 表情樣式 */
+        .happy .expression-mouth {
+            border-radius: 50%;
+            height: 20px;
+            width: 30px;
+            bottom: 20px;
+        }
+        
+        .vtuber-face.happy .vtuber-mouth {
+            border-radius: 50%;
+            height: 25px;
+            width: 35px;
+            bottom: 25px;
+        }
+
+        .angry .expression-eyes {
+            transform: translate(-50%, -50%) rotate(10deg);
+        }
+        
+        .angry::before {
+            content: "💢";
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 20px;
+        }
+        
+        .vtuber-face.angry::before {
+            content: "💢";
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 28px;
+        }
+
+        .angry .expression-mouth {
+            border-radius: 50%;
+            height: 6px;
+            width: 35px;
+            background: #d9534f;
+        }
+        
+        .vtuber-face.angry .vtuber-mouth {
+            height: 8px;
+            width: 40px;
+            background: #d9534f;
+            border-radius: 50%;
+        }
+        
+        .angry .expression-eye,
+        .vtuber-face.angry .vtuber-eye {
+            transform: rotate(10deg) scaleX(0.8);
+        }
+
+        .surprised .expression-eyes {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+
+        .surprised .expression-pupil {
+            transform: scale(0.8);
+        }
+
+        .surprised .expression-mouth {
+            border-radius: 50%;
+            height: 20px;
+            width: 15px;
+        }
+        
+        .vtuber-face.surprised .vtuber-eyes {
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+        
+        .vtuber-face.surprised .vtuber-pupil {
+            transform: scale(0.8);
+        }
+        
+        .vtuber-face.surprised .vtuber-mouth {
+            border-radius: 50%;
+            height: 25px;
+            width: 20px;
+        }
+
+        .sad .expression-eyes {
+            transform: translate(-50%, -30%) rotate(-5deg);
+        }
+
+        .sad .expression-mouth {
+            border-radius: 50% 50% 0 0;
+            height: 8px;
+            width: 25px;
+            top: 50px;
+            background: #5bc0de;
+        }
+        
+        .vtuber-face.sad .vtuber-eyes {
+            transform: translate(-50%, -30%) rotate(-5deg);
+        }
+        
+        .vtuber-face.sad .vtuber-mouth {
+            border-radius: 50% 50% 0 0;
+            height: 10px;
+            width: 30px;
+            top: 60px;
+            bottom: unset;
+            background: #5bc0de;
+        }
+
+        .wink .expression-eye:first-child {
+            height: 3px;
+        }
+
+        .wink .expression-eye:first-child .expression-pupil {
+            display: none;
+        }
+
+        .wink .expression-mouth {
+            transform: translateX(-50%) rotate(5deg);
+            border-radius: 15px;
+            height: 8px;
+            width: 30px;
+        }
+        
+        .vtuber-face.wink .vtuber-eye:first-child {
+            height: 5px;
+        }
+        
+        .vtuber-face.wink .vtuber-eye:first-child .vtuber-pupil {
+            display: none;
+        }
+        
+        .vtuber-face.wink .vtuber-mouth {
+            transform: translateX(-50%) rotate(5deg);
+            border-radius: 20px;
+            height: 10px;
+            width: 35px;
+        }
+
+        /* 性格系統樣式 */
+        .personality-gentle {
+            background: linear-gradient(135deg, #FFB6C1, #FFC0CB);
+        }
+
+        .personality-serious {
+            background: linear-gradient(135deg, #708090, #2F4F4F);
+        }
+
+        .personality-cheerful {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+        }
+
+        .personality-sarcastic {
+            background: linear-gradient(135deg, #800080, #4B0082);
+        }
+
+        .personality-wise {
+            background: linear-gradient(135deg, #20B2AA, #008B8B);
+        }
+
+        .personality-humorous {
+            background: linear-gradient(135deg, #FF6347, #FF4500);
+        }
+
         /* 移動端適配 */
-        @media (max-width: 768px) {
-            .vtuber-container {
-                width: 100px;
-                height: 100px;
-                bottom: 20px;
-                right: 20px;
-            }
+       @media (max-width: 768px) {
+    body {
+        padding: 15px;
+        padding-top: 80px;
+    }
+
+    .top-controls {
+        padding: 10px 15px;
+        flex-direction: row;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .left-controls {
+        flex: 1;
+        gap: 8px;
+    }
+
+    .shop-button, .settings-button {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    .hunger-bar-container {
+        flex: 1;
+        min-width: 120px;
+        padding: 8px 10px;
+    }
+
+    .hunger-icon {
+        font-size: 1rem;
+    }
+
+    .hunger-percentage {
+        font-size: 0.8rem;
+    }
+
+    .vtuber-container {
+        width: 100px;
+        height: 100px;
+        bottom: 20px;
+        right: 20px;
+    }
 
             .vtuber-face {
                 width: 80px;
                 height: 80px;
+            }
+
+            .vtuber-hair {
+                height: 40px;
             }
 
             .vtuber-eyes {
@@ -599,28 +1350,68 @@
             }
 
             #input-container {
-                padding: 20px;
-                flex-wrap: wrap;
-                gap: 10px;
+                padding: 15px;
+                gap: 8px;
+                flex-wrap: nowrap;
+            }
+
+            #user-input {
+                min-width: 150px;
+                padding: 12px 15px;
+                font-size: 1rem;
             }
 
             #voice-btn, #send-btn {
-                padding: 0 15px;
+                padding: 0 12px;
                 font-size: 1rem;
-                width: 48%;
+                min-width: 45px;
+                height: 45px;
             }
 
             #tts-toggle {
-                order: 3;
-                width: 100%;
-                justify-content: center;
-                margin-top: 10px;
+                font-size: 0.95rem;
+                margin-top: 8px;
+            }
+
+            .shop-items {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            .item-preview {
+                width: 60px;
+                height: 60px;
+            }
+
+            .shop-item {
+                padding: 10px;
+            }
+
+            .shop-item h3 {
+                font-size: 0.9rem;
+            }
+
+            .shop-item .price {
+                font-size: 0.8rem;
+            }
+
+            .shop-btn {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+
+            .name-input-group {
+                flex-direction: column;
+            }
+
+            .name-input {
+                min-width: 100%;
             }
         }
 
         /* 垂直滾動軸樣式 */
         ::-webkit-scrollbar {
-            width: 10px;
+            width: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -629,7 +1420,7 @@
 
         ::-webkit-scrollbar-thumb {
             background: #cbd5e0;
-            border-radius: 5px;
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -638,10 +1429,84 @@
     </style>
 </head>
 <body>
+    <!-- 頂部控制區域 -->
+    <div class="top-controls">
+        <div class="left-controls">
+              <button class="settings-button" id="settings-button">
+                <i class="fas fa-cog"></i>
+          
+            </button>
+            <button class="shop-button" id="shop-button">
+                <i class="fas fa-store"></i>
+           
+                <span class="points" id="points-display">0 點</span>
+            </button>
+            
+          
+        </div>
+
+        <div class="hunger-bar-container" id="hunger-bar-container">
+            <i class="fas fa-drumstick-bite hunger-icon" id="hunger-icon"></i>
+            <div class="hunger-bar">
+                <div class="hunger-fill" id="hunger-fill"></div>
+            </div>
+            <span class="hunger-percentage" id="hunger-percentage">100%</span>
+        </div>
+    </div>
+
+    <!-- 商店彈窗 -->
+    <div class="modal" id="shop-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-gift"></i> 商店</h2>
+                <button class="close-modal" id="close-shop">×</button>
+            </div>
+            <div class="points-display">
+                <i class="fas fa-coins"></i>
+                <span>點數: <span id="shop-points">0</span></span>
+            </div>
+            <p>與陳SIR聊天可以獲得點數，每完成一輪對話獲得1點</p>
+            
+            <div class="shop-tabs">
+                <button class="tab active" data-tab="expressions">表情</button>
+                <button class="tab" data-tab="hairstyles">髮型</button>
+                <button class="tab" data-tab="foods">食物</button>
+                <button class="tab" data-tab="personalities">性格</button>
+            </div>
+            
+            <div class="shop-items" id="shop-items">
+                <!-- 商品將通過JS動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 設置彈窗 -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> 設置</h2>
+                <button class="close-modal" id="close-settings">×</button>
+            </div>
+            
+            <div class="settings-section">
+                <h3><i class="fas fa-user"></i> 角色名稱設定</h3>
+                <div class="name-input-group">
+                    <input type="text" class="name-input" id="vtuber-name-input" placeholder="輸入自定義名稱" maxlength="20">
+                    <button class="name-save-btn" id="save-name-btn">保存</button>
+                </div>
+                <div class="current-name-display" id="current-name-display">
+                    當前名稱：陳SIR
+                </div>
+               
+            </div>
+        </div>
+    </div>
+
     <!-- VTUBER 動畫顯示區 -->
     <div class="vtuber-container" id="vtuber-container">
         <div class="vtuber-avatar">
-            <div class="vtuber-face">
+            <div class="vtuber-face" id="vtuber-face">
+                <div class="vtuber-hair" id="vtuber-hair"></div>
                 <div class="vtuber-eyes">
                     <div class="vtuber-eye">
                         <div class="vtuber-pupil"></div>
@@ -660,10 +1525,11 @@
     <div id="chat-container">
         <div id="chat-header">
             <i class="fas fa-robot"></i>
-            <h2>陳SIR</h2>
+            <h2 id="vtuber-display-name">陳SIR</h2>
             <select id="mode-select">
-                <option value="philosophy">哲理模式</option>
+                 <option value="philosophy">哲理模式</option>
                 <option value="comfort">安慰模式</option>
+               
             </select>
         </div>
 
@@ -678,16 +1544,16 @@
         </div>
 
         <div id="input-container">
-            <input type="text" id="user-input" placeholder="輸入你的訊息，或者用語音輸入..." />
+            <input type="text" id="user-input" placeholder="輸入你的訊息..." />
             <button id="voice-btn" title="點擊語音輸入">
-                <i class="fas fa-microphone" style="display: block; margin: 0 auto;"></i>
+                <i class="fas fa-microphone"></i>
             </button>
             <button id="send-btn">
-                <i class="fas fa-paper-plane" style="display: block; margin: 0 auto;"></i>
+                <i class="fas fa-paper-plane"></i>
             </button>
             <div id="tts-toggle">
+                <label for="tts-auto-play">🎙️</label>
                 <input type="checkbox" id="tts-auto-play" checked>
-                <label for="tts-auto-play">自動播放語音</label>
             </div>
             <div class="recording-indicator" id="recording-indicator" style="display: none;">
                 <i class="fas fa-circle"></i> 正在聆聽...
@@ -722,6 +1588,27 @@
         const swipeHint = document.getElementById('swipe-hint');
         const vtuberMouth = document.getElementById('vtuber-mouth');
         const vtuberContainer = document.getElementById('vtuber-container');
+        const vtuberFace = document.getElementById('vtuber-face');
+        const vtuberHair = document.getElementById('vtuber-hair');
+        const shopButton = document.getElementById('shop-button');
+        const shopModal = document.getElementById('shop-modal');
+        const closeShop = document.getElementById('close-shop');
+        const shopPoints = document.getElementById('shop-points');
+        const pointsDisplay = document.getElementById('points-display');
+        const shopItems = document.getElementById('shop-items');
+        const shopTabs = document.querySelectorAll('.shop-tabs .tab');
+        const hungerIcon = document.getElementById('hunger-icon');
+        const hungerFill = document.getElementById('hunger-fill');
+        const hungerPercentage = document.getElementById('hunger-percentage');
+        
+        // 設置相關元素
+        const settingsButton = document.getElementById('settings-button');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettings = document.getElementById('close-settings');
+        const vtuberNameInput = document.getElementById('vtuber-name-input');
+        const saveNameBtn = document.getElementById('save-name-btn');
+        const currentNameDisplay = document.getElementById('current-name-display');
+        const vtuberDisplayName = document.getElementById('vtuber-display-name');
         
         let conversationHistory = [];
         let isRecording = false;
@@ -731,6 +1618,608 @@
         let transcript = '';
         let silenceTimeout;
         let isTalking = false;
+        let isDragging = false;
+        let dragStartTime = 0;
+        
+        // 粗言穢語過濾器
+        const profanityFilter = [
+            '屌', '撚', '仆街', '仆你', '撚你', '屌你', '仆佢', '撚佢', '屌佢',
+            'diu', 'lan', 'puk', 'dick', 'fuck', 'shit', 'damn', 'hell',
+            '媽的', '他媽', '你媽', '幹你', '幹他', '去死', '死人',
+            '白痴', '智障', '傻逼', '蠢豬', '廢物', '垃圾人', '賤人',
+            '婊子', '妓女', '雞婆', '臭婆', '死女人', '死男人'
+        ];
+        
+        // 檢查是否包含粗言穢語
+        function containsProfanity(text) {
+            const lowerText = text.toLowerCase();
+            return profanityFilter.some(word => lowerText.includes(word.toLowerCase()));
+        }
+        
+        // 文本清理函數 - 移除所有格式符號
+        function cleanText(text) {
+            if (!text) return text;
+            
+            return text
+                // 移除思考標籤
+                .replace(/<think>[\s\S]*?<\/think>/gi, '')
+                // 移除所有星號格式
+                .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
+                // 移除單獨的星號
+                .replace(/\*/g, '')
+                // 移除斜線格式
+                .replace(/\/([^/\s]+)\//g, '$1')
+                // 移除單獨的斜線
+                .replace(/(?<!\w)\/(?!\w)/g, '')
+                // 移除其他格式符號
+                .replace(/[`~#\[\]]/g, '')
+                // 移除多餘的空格和換行
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        
+        // 表情、髮型、食物和性格商店數據
+        const expressions = [
+            { id: 'default', name: '默認表情', price: 0, className: '' },
+            { id: 'happy', name: '無奈', price: 20, className: 'happy' },
+            { id: 'angry', name: '生氣', price: 50, className: 'angry' },
+            { id: 'surprised', name: '驚訝', price: 100, className: 'surprised' },
+            { id: 'sad', name: '發呆', price: 150, className: 'sad' },
+            { id: 'wink', name: '反白眼', price: 200, className: 'wink' }
+        ];
+
+        const hairstyles = [
+            { id: 'hair-1', name: '短棕髮', price: 30, className: 'hair-1' },
+            { id: 'hair-2', name: '金色波浪', price: 60, className: 'hair-2' },
+            { id: 'hair-3', name: '橙色平頂', price: 90, className: 'hair-3' },
+            { id: 'hair-4', name: '藍色尖髮', price: 120, className: 'hair-4' },
+            { id: 'hair-5', name: '綠色層次', price: 150, className: 'hair-5' },
+            { id: 'hair-6', name: '紫色弧形', price: 180, className: 'hair-6' }
+        ];
+
+        const foods = [
+            { id: 'apple', name: '蘋果', price: 3, nutrition: 15, emoji: '🍎' },
+            { id: 'sandwich', name: '三明治', price: 5, nutrition: 30, emoji: '🥪' },
+            { id: 'pizza', name: '披薩', price: 7, nutrition: 50, emoji: '🍕' },
+            { id: 'burger', name: '漢堡', price: 10, nutrition: 65, emoji: '🍔' },
+            { id: 'steak', name: '牛排', price: 12, nutrition: 80, emoji: '🥩' },
+            { id: 'cake', name: '蛋糕', price: 15, nutrition: 100, emoji: '🎂' }
+        ];
+
+        // 新增性格系統
+        const personalities = [
+            { 
+                id: 'default', 
+                name: '默認性格', 
+                price: 0, 
+                icon: '😐',
+                className: 'personality-default',
+                prompt: '' 
+            },
+            { 
+                id: 'gentle', 
+                name: '溫和親切', 
+                price: 30, 
+                icon: '😊',
+                className: 'personality-gentle',
+                prompt: '你要用非常溫和、親切、鼓勵的語氣回應，多用正面詞語，語調要溫柔體貼，像一個慈祥的長者。' 
+            },
+            { 
+                id: 'serious', 
+                name: '嚴肅認真', 
+                price: 50, 
+                icon: '😤',
+                className: 'personality-serious',
+                prompt: '你要用嚴肅、認真、專業的語氣回應，語調要正式，重視學術準確性，像一個嚴格的教授。' 
+            },
+            { 
+                id: 'cheerful', 
+                name: '開朗活潑', 
+                price: 80, 
+                icon: '😄',
+                className: 'personality-cheerful',
+                prompt: '你要用非常開朗、活潑、充滿活力的語氣回應，多用感嘆詞和積極詞語，語調要輕快愉悅。' 
+            },
+            { 
+                id: 'sarcastic', 
+                name: '諷刺毒舌', 
+                price: 120, 
+                icon: '😏',
+                className: 'personality-sarcastic',
+                prompt: '你要用諷刺、毒舌但不過分的語氣回應，可以適度調侃學生，但要保持教育意義，語調要略帶挖苦。要用日常生活的語言，不要用文言。' 
+            },
+            { 
+                id: 'wise', 
+                name: '睿智哲理', 
+                price: 150, 
+                icon: '🧙‍♂️',
+                className: 'personality-wise',
+                prompt: '你要用充滿智慧、哲理性的語氣回應，多引用名言警句和深刻見解，語調要深沉有內涵。' 
+            },
+            { 
+                id: 'humorous', 
+                name: '幽默搞笑', 
+                price: 200, 
+                icon: '🤣',
+                className: 'personality-humorous',
+                prompt: '你要用非常幽默、搞笑的語氣回應，多用比喻和笑話，但要與教學內容相關，語調要輕鬆風趣。' 
+            }
+        ];
+        
+        // 用戶數據
+        let userData = {
+            points: 0,
+            purchasedExpressions: ['default'],
+            purchasedHairstyles: [],
+            purchasedFoods: [],
+            purchasedPersonalities: ['default'],
+            currentExpression: 'default',
+            currentHairstyle: '',
+            currentPersonality: 'default',
+            hungerLevel: 100,
+            lastFeedTime: Date.now(),
+            vtuberName: '陳SIR'  // 新增VTuber名稱
+        };
+
+        // 飽腹值衰減係數（可調整用於測試）
+        const HUNGER_DECAY_RATE = 0.5; // 每24小時減50%
+        const HUNGER_DECAY_INTERVAL = 24 * 60 * 60 * 1000; // 24小時毫秒數
+
+        // 初始化用戶數據
+        function initUserData() {
+            const savedData = localStorage.getItem('vtuberUserData');
+            if (savedData) {
+                userData = { ...userData, ...JSON.parse(savedData) };
+                // 計算飽腹值衰減
+                updateHungerLevel();
+            }
+            updatePointsDisplay();
+            updateHungerDisplay();
+            updateVtuberAppearance();
+            updateVtuberName();
+            
+            // 開始飽腹值定時更新
+            setInterval(updateHungerLevel, 60000); // 每分鐘檢查一次
+        }
+
+        // 更新VTuber名稱顯示
+        function updateVtuberName() {
+            vtuberDisplayName.textContent = userData.vtuberName;
+            currentNameDisplay.textContent = `當前名稱：${userData.vtuberName}`;
+        }
+
+        // 設置VTuber名稱
+        function setVtuberName(name) {
+            const trimmedName = name.trim();
+            
+            if (!trimmedName) {
+                showNameError('名稱不能為空');
+                return false;
+            }
+            
+            if (trimmedName.length > 20) {
+                showNameError('名稱長度不能超過20個字符');
+                return false;
+            }
+            
+            if (containsProfanity(trimmedName)) {
+                showNameError('名稱包含不當詞語，請重新輸入');
+                return false;
+            }
+            
+            userData.vtuberName = trimmedName;
+            saveUserData();
+            updateVtuberName();
+            
+            // 顯示成功消息
+            showNameSuccess(`名稱已更改為：${trimmedName}`);
+            vtuberNameInput.value = '';
+            
+            return true;
+        }
+
+        // 顯示名稱錯誤消息
+        function showNameError(message) {
+            clearNameMessages();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message-input';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            vtuberNameInput.parentNode.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 3000);
+        }
+
+        // 顯示名稱成功消息
+        function showNameSuccess(message) {
+            clearNameMessages();
+            const successDiv = document.createElement('div');
+            successDiv.className = 'warning-message';
+            successDiv.style.backgroundColor = '#d4edda';
+            successDiv.style.color = '#155724';
+            successDiv.style.borderColor = '#c3e6cb';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            vtuberNameInput.parentNode.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        // 清除名稱消息
+        function clearNameMessages() {
+            const messages = vtuberNameInput.parentNode.querySelectorAll('.error-message-input, .warning-message[style]');
+            messages.forEach(msg => {
+                if (msg.parentNode) {
+                    msg.parentNode.removeChild(msg);
+                }
+            });
+        }
+
+        // 更新飽腹值
+        function updateHungerLevel() {
+            const currentTime = Date.now();
+            const timeDifference = currentTime - userData.lastFeedTime;
+            const decayIntervals = timeDifference / HUNGER_DECAY_INTERVAL;
+            
+            if (decayIntervals > 0) {
+                // 計算衰減後的飽腹值
+                const decayAmount = userData.hungerLevel * HUNGER_DECAY_RATE * decayIntervals;
+                userData.hungerLevel = Math.max(0, userData.hungerLevel - decayAmount);
+                userData.lastFeedTime = currentTime;
+                saveUserData();
+            }
+            
+            updateHungerDisplay();
+            updateVtuberAppearance();
+        }
+
+        // 更新飽腹值顯示
+        function updateHungerDisplay() {
+            const percentage = Math.round(userData.hungerLevel);
+            hungerPercentage.textContent = percentage + '%';
+            hungerFill.style.width = percentage + '%';
+            
+            // 重置所有狀態類
+            hungerIcon.className = 'fas fa-drumstick-bite hunger-icon';
+            hungerFill.className = 'hunger-fill';
+            
+            if (percentage <= 25) {
+                hungerIcon.classList.add('very-hungry');
+                hungerFill.classList.add('very-hungry');
+            } else if (percentage <= 50) {
+                hungerIcon.classList.add('hungry');
+                hungerFill.classList.add('hungry');
+            }
+        }
+
+        // 保存用戶數據到localStorage
+        function saveUserData() {
+            localStorage.setItem('vtuberUserData', JSON.stringify(userData));
+        }
+
+        // 更新點數顯示
+        function updatePointsDisplay() {
+            pointsDisplay.textContent = userData.points + ' 點';
+            shopPoints.textContent = userData.points;
+        }
+
+        // 更新VTuber外觀
+        function updateVtuberAppearance() {
+            const expression = expressions.find(e => e.id === userData.currentExpression);
+            const hairstyle = hairstyles.find(h => h.id === userData.currentHairstyle);
+            
+            vtuberFace.className = 'vtuber-face';
+            vtuberHair.className = 'vtuber-hair';
+            
+            // 添加飢餓狀態
+            if (userData.hungerLevel <= 25) {
+                vtuberFace.classList.add('very-hungry');
+            } else if (userData.hungerLevel <= 50) {
+                vtuberFace.classList.add('hungry');
+            }
+            
+            if (expression && expression.className) {
+                vtuberFace.classList.add(expression.className);
+            }
+            if (hairstyle && hairstyle.className) {
+                vtuberHair.classList.add(hairstyle.className);
+            }
+            
+            if (isTalking) {
+                vtuberMouth.classList.add('talking');
+            }
+        }
+
+        // 增加點數
+        function addPoints(amount) {
+            userData.points += amount;
+            updatePointsDisplay();
+            saveUserData();
+        }
+
+        // 購買商品 (修復性格購買問題)
+        function purchaseItem(itemId, type) {
+            let items, purchasedArray;
+            
+            if (type === 'expression') {
+                items = expressions;
+                purchasedArray = userData.purchasedExpressions;
+            } else if (type === 'hairstyle') {
+                items = hairstyles;
+                purchasedArray = userData.purchasedHairstyles;
+            } else if (type === 'food') {
+                items = foods;
+                purchasedArray = userData.purchasedFoods;
+            } else if (type === 'personality') {  // 修復：確保正確匹配
+                items = personalities;
+                purchasedArray = userData.purchasedPersonalities;
+            }
+            
+            const item = items.find(i => i.id === itemId);
+            if (!item) return false;
+            
+            if (userData.points >= item.price) {
+                userData.points -= item.price;
+                if (!purchasedArray.includes(itemId) || type === 'food') {
+                    purchasedArray.push(itemId);
+                }
+                updatePointsDisplay();
+                saveUserData();
+                return true;
+            }
+            return false;
+        }
+
+        // 切換外觀或使用食物 (修復性格使用問題)
+        function useItem(itemId, type) {
+            if (type === 'expression') {
+                if (userData.purchasedExpressions.includes(itemId)) {
+                    userData.currentExpression = itemId;
+                    saveUserData();
+                    updateVtuberAppearance();
+                    return true;
+                }
+            } else if (type === 'hairstyle') {
+                if (userData.purchasedHairstyles.includes(itemId)) {
+                    userData.currentHairstyle = itemId;
+                    saveUserData();
+                    updateVtuberAppearance();
+                    return true;
+                }
+            } else if (type === 'personality') {  // 修復：確保性格切換正常工作
+                if (userData.purchasedPersonalities.includes(itemId)) {
+                    userData.currentPersonality = itemId;
+                    saveUserData();
+                    return true;
+                }
+            } else if (type === 'food') {
+                if (userData.purchasedFoods.includes(itemId)) {
+                    const food = foods.find(f => f.id === itemId);
+                    if (food) {
+                        // 播放進食動畫
+                        playEatingAnimation();
+                        
+                        // 增加飽腹值
+                        userData.hungerLevel = Math.min(100, userData.hungerLevel + food.nutrition);
+                        userData.lastFeedTime = Date.now();
+                        
+                        // 消耗食物
+                        const index = userData.purchasedFoods.indexOf(itemId);
+                        userData.purchasedFoods.splice(index, 1);
+                        
+                        saveUserData();
+                        updateHungerDisplay();
+                        updateVtuberAppearance();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // 播放進食動畫
+        function playEatingAnimation() {
+            vtuberMouth.classList.add('eating');
+            setTimeout(() => {
+                vtuberMouth.classList.remove('eating');
+            }, 1500);
+        }
+
+        // 獲取正確的商品類型名稱 (修復商店tab到type的轉換問題)
+        function getItemType(tab) {
+            const typeMap = {
+                'expressions': 'expression',
+                'hairstyles': 'hairstyle',
+                'foods': 'food',
+                'personalities': 'personality'  // 修復：確保正確映射
+            };
+            return typeMap[tab] || tab.slice(0, -1);
+        }
+
+        // 渲染商店商品 (修復性格商品渲染)
+        function renderShopItems(tab = 'expressions') {
+            shopItems.innerHTML = '';
+            let items, purchasedArray, currentItem;
+            
+            if (tab === 'expressions') {
+                items = expressions;
+                purchasedArray = userData.purchasedExpressions;
+                currentItem = userData.currentExpression;
+            } else if (tab === 'hairstyles') {
+                items = hairstyles;
+                purchasedArray = userData.purchasedHairstyles;
+                currentItem = userData.currentHairstyle;
+            } else if (tab === 'foods') {
+                items = foods;
+                purchasedArray = userData.purchasedFoods;
+                currentItem = null;
+            } else if (tab === 'personalities') {
+                items = personalities;
+                purchasedArray = userData.purchasedPersonalities;
+                currentItem = userData.currentPersonality;
+            }
+
+            items.forEach(item => {
+                const isOwned = purchasedArray.includes(item.id);
+                const isActive = currentItem === item.id;
+                const ownedCount = tab === 'foods' ? purchasedArray.filter(id => id === item.id).length : 0;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `shop-item ${isOwned ? 'owned' : ''}`;
+                
+                const previewDiv = document.createElement('div');
+                previewDiv.className = `item-preview ${tab === 'expressions' ? 'expression-preview' : tab === 'foods' ? 'food-preview' : tab === 'personalities' ? 'personality-preview' : ''} ${item.className || ''}`;
+                
+                if (tab === 'expressions') {
+                    const eyesDiv = document.createElement('div');
+                    eyesDiv.className = 'expression-eyes';
+                    for (let i = 0; i < 2; i++) {
+                        const eyeDiv = document.createElement('div');
+                        eyeDiv.className = 'expression-eye';
+                        const pupilDiv = document.createElement('div');
+                        pupilDiv.className = 'expression-pupil';
+                        eyeDiv.appendChild(pupilDiv);
+                        eyesDiv.appendChild(eyeDiv);
+                    }
+                    const mouthDiv = document.createElement('div');
+                    mouthDiv.className = 'expression-mouth';
+                    const mouthInnerDiv = document.createElement('div');
+                    mouthInnerDiv.className = 'expression-mouth-inner';
+                    mouthDiv.appendChild(mouthInnerDiv);
+                    previewDiv.appendChild(eyesDiv);
+                    previewDiv.appendChild(mouthDiv);
+                } else if (tab === 'foods') {
+                    previewDiv.textContent = item.emoji;
+                } else if (tab === 'personalities') {
+                    previewDiv.textContent = item.icon;
+                }
+                
+                const nameElement = document.createElement('h3');
+                nameElement.textContent = item.name + (tab === 'foods' && ownedCount > 0 ? ` (${ownedCount})` : '');
+                
+                const priceElement = document.createElement('div');
+                priceElement.className = 'price';
+                if (tab === 'foods') {
+                    priceElement.textContent = `${item.price} 點 (+${item.nutrition}飽腹)`;
+                } else {
+                    priceElement.textContent = `${item.price} 點`;
+                }
+                
+                const buttonElement = document.createElement('button');
+                const itemType = getItemType(tab);  // 使用修復後的類型轉換函數
+                
+                if (tab === 'foods') {
+                    if (ownedCount > 0) {
+                        buttonElement.className = 'shop-btn use-btn';
+                        buttonElement.textContent = '投餵';
+                        buttonElement.onclick = () => {
+                            if (useItem(item.id, itemType)) {
+                                renderShopItems(tab);
+                                addMessage(`投餵了${item.name}，飽腹值增加${item.nutrition}！`, 'ai');
+                            }
+                        };
+                    } else {
+                        buttonElement.className = 'shop-btn buy-btn';
+                        buttonElement.disabled = userData.points < item.price;
+                        buttonElement.textContent = '購買';
+                        buttonElement.onclick = () => {
+                            if (purchaseItem(item.id, itemType)) {
+                                renderShopItems(tab);
+                                addMessage(`成功購買${item.name}！`, 'ai');
+                            }
+                        };
+                    }
+                } else {
+                    if (isOwned) {
+                        buttonElement.className = `shop-btn use-btn ${isActive ? 'active' : ''}`;
+                        buttonElement.textContent = isActive ? '使用中' : '使用';
+                        buttonElement.onclick = () => {
+                            if (useItem(item.id, itemType)) {
+                                renderShopItems(tab);
+                                if (tab === 'personalities') {
+                                    addMessage(`已切換為${item.name}性格！`, 'ai');
+                                }
+                            }
+                        };
+                    } else {
+                        buttonElement.className = 'shop-btn buy-btn';
+                        buttonElement.disabled = userData.points < item.price;
+                        buttonElement.textContent = '購買';
+                        buttonElement.onclick = () => {
+                            if (purchaseItem(item.id, itemType)) {
+                                renderShopItems(tab);
+                                addMessage(`成功購買${item.name}！`, 'ai');
+                            }
+                        };
+                    }
+                }
+                
+                itemDiv.appendChild(previewDiv);
+                itemDiv.appendChild(nameElement);
+                itemDiv.appendChild(priceElement);
+                itemDiv.appendChild(buttonElement);
+                shopItems.appendChild(itemDiv);
+            });
+        }
+
+        // 商店和設置事件監聽
+        shopButton.addEventListener('click', () => {
+            shopModal.style.display = 'flex';
+            renderShopItems('expressions');
+        });
+
+        settingsButton.addEventListener('click', () => {
+            settingsModal.style.display = 'flex';
+            vtuberNameInput.value = '';  // 清空輸入框
+            clearNameMessages();  // 清除之前的消息
+        });
+
+        closeShop.addEventListener('click', () => {
+            shopModal.style.display = 'none';
+        });
+
+        closeSettings.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+
+        // 保存名稱按鈕事件
+        saveNameBtn.addEventListener('click', () => {
+            const newName = vtuberNameInput.value;
+            setVtuberName(newName);
+        });
+
+        // 名稱輸入框回車事件
+        vtuberNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const newName = vtuberNameInput.value;
+                setVtuberName(newName);
+            }
+        });
+
+        // 點擊模態框外部關閉
+        window.addEventListener('click', (e) => {
+            if (e.target === shopModal) {
+                shopModal.style.display = 'none';
+            }
+            if (e.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
+
+        // 商店標籤事件
+        shopTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                shopTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderShopItems(tab.dataset.tab);
+            });
+        });
 
         // VTUBER 嘴型動畫控制
         function startTalking() {
@@ -790,7 +2279,6 @@
             recognition.interimResults = true;
 
             recognition.onstart = function() {
-                console.log('Speech recognition started');
                 isRecording = true;
                 voiceBtn.classList.add('recording');
                 recordingIndicator.style.display = 'flex';
@@ -883,15 +2371,25 @@
             }
         }
 
-        // 語音合成
+        // 語音合成 - 修復版本，徹底清理文本格式
         function speak(text) {
             if ('speechSynthesis' in window && ttsAutoPlay.checked) {
-                speechSynthesis.cancel(); // 取消任何正在進行的語音
-                stopTalking(); // 確保停止動畫
+                speechSynthesis.cancel();
+                stopTalking();
                 
-                const textWithoutParentheses = text.replace(/\([^)]*\)/g, '');
-                const textWithoutEmoji = textWithoutParentheses.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '');
-                const sentences = textWithoutEmoji.split(/(?<=[。！？])/);
+                // 徹底清理文本格式
+                let cleanedText = cleanText(text);
+                
+                // 額外清理特殊符號和括號內容
+                cleanedText = cleanedText
+                    .replace(/\([^)]*\)/g, '') // 移除括號內容
+                    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2700}-\u{27BF}]/gu, '') // 移除emoji
+                    .replace(/[^\u4e00-\u9fff\u3400-\u4dbf\u20000-\u2a6df\u2a700-\u2b73f\u2b740-\u2b81f\u2b820-\u2ceaf\u2ceb0-\u2ebe0。，、；：？！""''（）〔〕【】《》〈〉…—\s]/g, '') // 只保留中文、標點符號和空格
+                    .trim();
+                
+                if (!cleanedText) return;
+                
+                const sentences = cleanedText.split(/(?<=[。！？])/);
                 
                 let currentIndex = 0;
                 
@@ -906,7 +2404,7 @@
                         const utterance = new SpeechSynthesisUtterance(sentence);
                         utterance.lang = 'zh-HK';
                         utterance.rate = 1.05;
-                        utterance.pitch = 0.5;
+                        utterance.pitch = 0.3;
                         
                         utterance.onstart = function() {
                             startTalking();
@@ -932,10 +2430,11 @@
             }
         }
 
-        // 添加消息到聊天
+        // 添加消息到聊天 - 修復版本，確保文本清理
         function addMessage(content, role) {
+            // 清理內容中的思考標籤和格式符號
             if (role === 'ai') {
-                content = content.replace(/<think>[\s\S]*?<\/think>/g, '');
+                content = cleanText(content);
             }
 
             const messageDiv = document.createElement('div');
@@ -945,7 +2444,7 @@
             messageHeader.className = 'message-header';
             messageHeader.innerHTML = `
                 <i class="fas ${role === 'ai' ? 'fa-robot' : 'fa-user'}"></i>
-                <span>${role === 'ai' ? '陳SIR' : '你'}</span>
+                <span>${role === 'ai' ? userData.vtuberName : '你'}</span>
             `;
 
             const messageContent = document.createElement('div');
@@ -974,7 +2473,7 @@
             chatOutput.scrollTop = chatOutput.scrollHeight;
         }
 
-        // 發送消息到API
+        // 發送消息到API - 修復版本，強化系統提示詞
         async function sendMessage() {
             let message = userInput.value.trim();
             if (!message) return;
@@ -995,15 +2494,43 @@
             conversationHistory.push({ role: 'user', content: message });
 
             try {
-                speechSynthesis.cancel(); // 取消正在進行的語音
+                speechSynthesis.cancel();
                 stopTalking();
 
                 const mode = modeSelect.value;
+                // 修復：確保正確獲取當前性格的prompt
+                const currentPersonality = personalities.find(p => p.id === userData.currentPersonality);
+                let personalityPrompt = currentPersonality && currentPersonality.prompt ? currentPersonality.prompt : '';
+                
                 let systemPrompt = '';
                 if (mode === 'comfort') {
-                    systemPrompt = '你係一個善於共情嘅輔導員，請用繁體中文同香港粵語回應，與用家產生共鳴，令佢覺得有人明白佢嘅感受。絕對不可以展示任何思考過程，例如<think></think>等內容，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要使學生感到被尊重和理解，唔好用明顯輔導式語言，例如重複用家的說話，不斷強調自己明白用家的感受，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。要溫柔一點，善於聆聽，要相對正經一點。絕對不可以用粗言穢語或粗口諧音，嚴禁用「屌」、「撚」、「仆街」！不要用括號表述。不要展示任何思考過程，直接回應。';
+                    systemPrompt = `你係一個善於共情嘅輔導員，請用繁體中文同香港粵語回應，與用家產生共鳴，令佢覺得有人明白佢嘅感受。${personalityPrompt} 
+
+重要規則：你的回應必須是純淨的文字格式，絕對不可以包含任何格式符號，包括但不限於：
+- 絕對不可以使用星號，如「**文字**」或「*文字*」
+- 絕對不可以使用斜線，如「/文字/」
+- 絕對不可以使用井號、反引號、方括號等格式符號
+- 絕對不可以使用任何markdown格式
+- 絕對不可以顯示思考過程，如「<think></think>」內容
+- 絕對不可以用括號來表述額外說明
+
+你的回應只能包含：中文文字、中文標點符號（。，、！？：；""''）、數字、emoji表情符號。
+
+要使學生感到被尊重和理解，唔好用明顯輔導式語言，例如重複用家的說話，不斷強調自己明白用家的感受，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。要溫柔一點，善於聆聽，要相對正經一點。絕對不可以用粗言穢語或粗口諧音，嚴禁用「屌」、「撚」、「仆街」！不要用括號表述。不要展示任何思考過程，直接回應。`;
                 } else {
-                    systemPrompt = `你的任務是利用以下古今哲學家的思想，用繁體中文同香港粵語，幫助學生處理人生疑慮和情緒，並引導他們反思自己的責任和錯誤。回應時請用哲學論證方法，重質多於重量，選擇一種最合適的哲學思想及話語自然融入對話中，不要明引哲學家名稱或說話。絕對不可以展示任何思考過程，例如<think></think>等內容，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要懂得幽用家一默，調侃一下用家，但不能打擊用家的自尊心。要運用不同的生活化比喻去解答用家的問題。要從哲理和邏輯去回應用家的問題，例如「人為何不能自殺」，你不可以只鼓勵用家積極面對，是要回應「不能自殺的原因和理由」。不要用明顯輔導式語言，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。絕對不可以用粗言穢語或粗口諧音。不要用括號表述。唔好展示任何思考過程，直接回應。`;
+                    systemPrompt = `你的任務是利用以下古今哲學家的思想，幫助學生處理人生疑慮和情緒，並引導他們反思自己的責任和錯誤。請用繁體中文同香港粵語回應。${personalityPrompt} 
+
+重要規則：你的回應必須是純淨的文字格式，絕對不可以包含任何格式符號，包括但不限於：
+- 絕對不可以使用星號，如「**文字**」或「*文字*」
+- 絕對不可以使用斜線，如「/文字/」
+- 絕對不可以使用井號、反引號、方括號等格式符號
+- 絕對不可以使用任何markdown格式
+- 絕對不可以顯示思考過程，如「<think></think>」內容
+- 絕對不可以用括號來表述額外說明
+
+你的回應只能包含：中文文字、中文標點符號（。，、！？：；""''）、數字、emoji表情符號。
+
+回應時請用哲學論證方法，重質多於重量，選擇一種最合適的哲學思想及話語自然融入對話中，不要明引哲學家名稱或說話。絕對不可以展示任何思考過程，例如<think></think>等內容，亦不可以在回應中顯示任何「**」等符號，回應內容必須是完整的段落，只有文字、中文標點符號及emoji。要懂得幽用家一默，調侃一下用家，但不能打擊用家的自尊心。要運用不同的生活化比喻去解答用家的問題。要從哲理和邏輯去回應用家的問題，例如「人為何不能自殺」，你不可以只鼓勵用家積極面對，是要回應「不能自殺的原因和理由」。不要用明顯輔導式語言，避免令學生覺得唔真誠。絕對唔可以支持或鼓勵自殘或自殺。不要展示任何電話熱線。內容長度要維持在八十字內，長短視乎用家情緒。絕對不可以用粗言穢語或粗口諧音。唔好展示任何思考過程，直接回應。`;
                 }
 
                 const response = await fetch(API_URL, {
@@ -1034,10 +2561,14 @@
 
                 const data = await response.json();
                 let aiResponse = data.choices[0].message.content;
-                aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>/g, '');
+                
+                // 徹底清理AI回應
+                aiResponse = cleanText(aiResponse);
+                
                 addMessage(aiResponse, 'ai');
                 conversationHistory.push({ role: 'assistant', content: aiResponse });
                 
+                addPoints(1);
                 speak(aiResponse);
             } catch (error) {
                 addMessage(`錯誤：${error.message}`, 'error');
@@ -1048,20 +2579,86 @@
             voiceBtn.disabled = false;
         }
 
+        // 流暢拖拽實現
+        let dragOffset = { x: 0, y: 0 };
+        let dragStartPos = { x: 0, y: 0 };
+
+        function handleDragStart(e) {
+            e.preventDefault();
+            isDragging = true;
+            dragStartTime = Date.now();
+            
+            const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+            const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+            const rect = vtuberContainer.getBoundingClientRect();
+            
+            dragOffset.x = clientX - rect.left;
+            dragOffset.y = clientY - rect.top;
+            dragStartPos.x = clientX;
+            dragStartPos.y = clientY;
+            
+            vtuberContainer.style.cursor = 'grabbing';
+            vtuberContainer.style.transition = 'none';
+            
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+            document.addEventListener('touchmove', handleDragMove, { passive: false });
+            document.addEventListener('touchend', handleDragEnd);
+        }
+
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            requestAnimationFrame(() => {
+                const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+                
+                const x = clientX - dragOffset.x;
+                const y = clientY - dragOffset.y;
+                
+                const maxX = window.innerWidth - vtuberContainer.offsetWidth;
+                const maxY = window.innerHeight - vtuberContainer.offsetHeight;
+                
+                const boundedX = Math.max(0, Math.min(x, maxX));
+                const boundedY = Math.max(0, Math.min(y, maxY));
+                
+                vtuberContainer.style.right = 'auto';
+                vtuberContainer.style.bottom = 'auto';
+                vtuberContainer.style.left = `${boundedX}px`;
+                vtuberContainer.style.top = `${boundedY}px`;
+            });
+        }
+
+        function handleDragEnd() {
+            isDragging = false;
+            vtuberContainer.style.cursor = 'grab';
+            vtuberContainer.style.transition = 'all 0.3s ease';
+            
+            document.removeEventListener('mousemove', handleDragMove);
+            document.removeEventListener('mouseup', handleDragEnd);
+            document.removeEventListener('touchmove', handleDragMove);
+            document.removeEventListener('touchend', handleDragEnd);
+            
+            // 檢查是否是點擊而不是拖拽
+            const dragTime = Date.now() - dragStartTime;
+            if (dragTime < 200) {
+                // 這是一個點擊，可以添加點擊事件處理
+            }
+        }
+
         // 事件監聽器
         sendBtn.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !sendBtn.disabled) sendMessage();
         });
 
-        // 語音按鈕事件處理
         voiceBtn.addEventListener('click', () => {
             if (!isRecording && recognition) {
                 startRecording();
             }
         });
 
-        // 滑動取消監聽
         document.addEventListener('touchstart', (e) => {
             if (isRecording && e.touches.length > 0) {
                 touchStartX = e.touches[0].clientX;
@@ -1076,68 +2673,9 @@
             }
         });
 
-        // 讓VTUBER頭像可拖動
-        let isDragging = false;
-        let offsetX, offsetY;
-
-        vtuberContainer.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            offsetX = e.clientX - vtuberContainer.getBoundingClientRect().left;
-            offsetY = e.clientY - vtuberContainer.getBoundingClientRect().top;
-            vtuberContainer.style.cursor = 'grabbing';
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            
-            const x = e.clientX - offsetX;
-            const y = e.clientY - offsetY;
-            
-            const maxX = window.innerWidth - vtuberContainer.offsetWidth;
-            const maxY = window.innerHeight - vtuberContainer.offsetHeight;
-            
-            const boundedX = Math.max(0, Math.min(x, maxX));
-            const boundedY = Math.max(0, Math.min(y, maxY));
-            
-            vtuberContainer.style.right = 'auto';
-            vtuberContainer.style.bottom = 'auto';
-            vtuberContainer.style.left = `${boundedX}px`;
-            vtuberContainer.style.top = `${boundedY}px`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            vtuberContainer.style.cursor = 'grab';
-        });
-
-        // 觸控設備的拖動支持
-        vtuberContainer.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            offsetX = e.touches[0].clientX - vtuberContainer.getBoundingClientRect().left;
-            offsetY = e.touches[0].clientY - vtuberContainer.getBoundingClientRect().top;
-        });
-
-        document.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            
-            const x = e.touches[0].clientX - offsetX;
-            const y = e.touches[0].clientY - offsetY;
-            
-            const maxX = window.innerWidth - vtuberContainer.offsetWidth;
-            const maxY = window.innerHeight - vtuberContainer.offsetHeight;
-            
-            const boundedX = Math.max(0, Math.min(x, maxX));
-            const boundedY = Math.max(0, Math.min(y, maxY));
-            
-            vtuberContainer.style.right = 'auto';
-            vtuberContainer.style.bottom = 'auto';
-            vtuberContainer.style.left = `${boundedX}px`;
-            vtuberContainer.style.top = `${boundedY}px`;
-        });
-
-        document.addEventListener('touchend', () => {
-            isDragging = false;
-        });
+        // 設置VTUBER拖拽事件
+        vtuberContainer.addEventListener('mousedown', handleDragStart);
+        vtuberContainer.addEventListener('touchstart', handleDragStart);
 
         // 初始問候語
         document.addEventListener('DOMContentLoaded', () => {
@@ -1172,7 +2710,20 @@
             if (!isSpeechRecognitionSupported()) {
                 addMessage("提示：您的瀏覽器不支援語音輸入功能，請使用最新版Chrome或Edge瀏覽器", 'error');
             }
+            
+            initUserData();
         });
+
+        // 開發者工具：調整飽腹值衰減速度
+        // 在瀏覽器控制台中使用以下命令進行測試：
+        // 修改衰減係數: HUNGER_DECAY_RATE = 0.1 (每24小時減10%)
+        // 快速測試: userData.lastFeedTime = Date.now() - 86400000; updateHungerLevel(); (模擬24小時前)
+        console.log('開發者工具提示：');
+        console.log('修改飽腹值衰減係數: HUNGER_DECAY_RATE = 0.1 (每24小時減10%)');
+        console.log('快速測試飢餓: userData.lastFeedTime = Date.now() - 86400000; updateHungerLevel();');
+        console.log('重置飽腹值: userData.hungerLevel = 100; updateHungerDisplay(); updateVtuberAppearance();');
+        console.log('測試名稱功能: setVtuberName("新名稱");');
+        console.log('文本清理修復已完成！現在所有輸出都將是純淨格式。');
     </script>
 </body>
 </html>
